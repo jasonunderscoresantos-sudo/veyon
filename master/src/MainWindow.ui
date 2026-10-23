@@ -221,9 +221,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
          </widget>
         </item>
         <item>
@@ -241,9 +238,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
          </widget>
         </item>
         <item>
@@ -370,11 +364,4 @@ Press and hold to load arrangement from a file or save current arrangement to a 
  <slots>
   <slot>showAboutDialog()</slot>
  </slots>
- <buttongroups>
-  <buttongroup name="buttonGroup">
-   <property name="exclusive">
-    <bool>false</bool>
-   </property>
-  </buttongroup>
- </buttongroups>
 </ui>

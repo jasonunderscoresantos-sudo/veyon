@@ -34,13 +34,13 @@
 
 
 MainToolBar::MainToolBar( QWidget* parent ) :
-	QToolBar( tr( "Configuration" ), parent ),
+	QToolBar( tr( "Teacher controls" ), parent ),
 	m_mainWindow(qobject_cast<MainWindow *>(parent)),
 	m_layout(findChild<QLayout *>())
 {
 	setExpanded();
 	setIconSize(QSize(32, 32));
-	// NextSpace accessibility: announce the toolbar by its role; the upstream window title is left unchanged
+	// NextSpace accessibility: announce the toolbar by its role, with the same text as its title
 	setAccessibleName( tr( "Teacher controls" ) );
 
 	ToolButton::setToolTipsDisabled( m_mainWindow->masterCore().userConfig().noToolTips() );

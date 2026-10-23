@@ -22,6 +22,8 @@
  *
  */
 
+#include <QApplication>
+#include <QButtonGroup>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QJsonDocument>
@@ -419,6 +421,21 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	addFeaturesToToolBar();
 	reloadSubFeatures();
+	// NextSpace accessibility: when a mode button receives focus, Qt removes Tab focus from the other buttons
+	// of the exclusive mode group; give it back right away so every enabled mode button stays in the Tab cycle.
+	// The group is the context object, so the connection ends with the group, also during window teardown.
+	connect( qApp, &QApplication::focusChanged, m_modeGroup, [group = m_modeGroup]( QWidget*, QWidget* now ) {
+		if( group->buttons().contains( qobject_cast<QAbstractButton *>( now ) ) )
+		{
+			for( auto* button : group->buttons() )
+			{
+				if( button->isEnabled() )
+				{
+					button->setFocusPolicy( Qt::FocusPolicy( button->focusPolicy() | Qt::TabFocus ) );
+				}
+			}
+		}
+	} );
 
 	// NextSpace layout: About sits at the far end of the toolbar
 	auto toolBarSpacer = new QWidget( ui->toolBar );
