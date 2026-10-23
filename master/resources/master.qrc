@@ -1,5 +1,15 @@
 <RCC>
     <qresource prefix="/master">
+        <file>branding/nextspace-classroom-logo.png</file>
+        <file>branding/nextspace-teacher-console-16.png</file>
+        <file>branding/nextspace-teacher-console-20.png</file>
+        <file>branding/nextspace-teacher-console-24.png</file>
+        <file>branding/nextspace-teacher-console-32.png</file>
+        <file>branding/nextspace-teacher-console-40.png</file>
+        <file>branding/nextspace-teacher-console-48.png</file>
+        <file>branding/nextspace-teacher-console-64.png</file>
+        <file>branding/nextspace-teacher-console-128.png</file>
+        <file>branding/nextspace-teacher-console-256.png</file>
         <file>zoom-fit-best.png</file>
         <file>zoom-fit-best-dark.png</file>
         <file>camera-photo.png</file>
@@ -8,7 +18,6 @@
         <file>host-dns-error.png</file>
         <file>host-service-error.png</file>
         <file>host-access-denied.png</file>
-        <file>splash.png</file>
         <file>computers.png</file>
         <file>align-grid.png</file>
         <file>align-grid-dark.png</file>

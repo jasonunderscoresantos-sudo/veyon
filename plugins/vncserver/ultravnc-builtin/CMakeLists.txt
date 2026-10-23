@@ -74,6 +74,7 @@ set(WITH_PCH OFF)
 
 build_veyon_plugin(builtin-ultravnc-server
 	NAME BuiltinUltraVncServer
+	DESCRIPTION "NextSpace Classroom Management - Built-in UltraVNC Server Plugin"
 	SOURCES
 	BuiltinUltraVncServer.cpp
 	LogoffEventFilter.cpp

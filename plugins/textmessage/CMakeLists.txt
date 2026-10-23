@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(textmessage
 	NAME TextMessage
+	DESCRIPTION "NextSpace Classroom Management - Text Message Plugin"
 	SOURCES
 	TextMessageFeaturePlugin.cpp
 	TextMessageDialog.cpp

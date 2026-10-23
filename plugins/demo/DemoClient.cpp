@@ -46,8 +46,14 @@ DemoClient::DemoClient( const QString& host, int port, bool fullscreen, QRect vi
 		m_toplevel->move(0, 0);
 	}
 
-	m_toplevel->setWindowTitle(tr("Veyon Demo"));
-	m_toplevel->setWindowIcon( QPixmap( QStringLiteral(":/core/icon64.png") ) );
+	m_toplevel->setWindowTitle(tr("NextSpace Broadcast"));
+	// NextSpace: this window only opens in the Student Agent worker, so it uses the Student Agent icon.
+	QIcon windowIcon;
+	for( const auto size : { 16, 20, 24, 32, 40, 48, 64, 128, 256 } )
+	{
+		windowIcon.addFile( QStringLiteral(":/demo/branding/nextspace-student-agent-%1.png").arg(size), QSize(size, size) );
+	}
+	m_toplevel->setWindowIcon( windowIcon );
 	m_toplevel->setAttribute( Qt::WA_DeleteOnClose, false );
 	m_toplevel->installEventFilter(this);
 

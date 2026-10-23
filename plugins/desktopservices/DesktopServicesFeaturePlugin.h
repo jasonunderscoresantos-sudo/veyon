@@ -29,6 +29,8 @@
 #include "DesktopServiceObject.h"
 #include "FeatureProviderInterface.h"
 
+class QMenu;
+
 class DesktopServicesFeaturePlugin : public QObject, PluginInterface,
 		FeatureProviderInterface,
 		ConfigurationPagePluginInterface
@@ -109,6 +111,7 @@ private:
 
 	void updateFeatures();
 	void openMenu( const QString& objectName );
+	static QMenu* findFeatureMenu( QWidget* mainWindow, const QString& featureName );
 
 	void executeStartAppDialog( VeyonMasterInterface& master,
 							 const ComputerControlInterfaceList& computerControlInterfaces );

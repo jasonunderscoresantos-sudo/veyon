@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(desktopservices
 	NAME DesktopServices
+	DESCRIPTION "NextSpace Classroom Management - Desktop Services Plugin"
 	SOURCES
 	DesktopServiceObject.cpp
 	DesktopServicesConfigurationPage.cpp

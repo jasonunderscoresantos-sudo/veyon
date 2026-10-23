@@ -32,7 +32,8 @@ function(build_veyon_plugin TARGET)
 		target_precompile_headers(${TARGET} REUSE_FROM veyon-library-pch)
 	endif()
 	if (VEYON_BUILD_WINDOWS)
-		add_windows_resources(${TARGET} ${ARGN})
+		# Windows plugin DLLs are NextSpace components; each declaration gives its own DESCRIPTION
+		add_windows_resources(${TARGET} NEXTSPACE_COMPONENT ${ARGN})
 	endif()
 endfunction()
 

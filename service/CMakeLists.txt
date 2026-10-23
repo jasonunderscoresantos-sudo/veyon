@@ -2,6 +2,9 @@ include(BuildVeyonApplication)
 
 build_veyon_application(veyon-service
 	NAME Service
+	DESCRIPTION "NextSpace Student Agent Service"
+	WINDOWS_ICON resources/branding/nextspace-student-agent.ico
+	NEXTSPACE_ROLE
 	SOURCES
 	src/main.cpp)
 

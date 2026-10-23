@@ -22,6 +22,7 @@
  *
  */
 
+#include <QGuiApplication>
 #include <QMessageBox>
 #include <QPushButton>
 
@@ -36,6 +37,18 @@ PasswordDialog::PasswordDialog( QWidget *parent ) :
 	ui( new Ui::PasswordDialog )
 {
 	ui->setupUi( this );
+
+	// NextSpace branding applies to the Teacher Console and Classroom Administration only.
+	if( VeyonCore::component() == VeyonCore::Component::Master )
+	{
+		setWindowTitle( tr("NextSpace Teacher Console Logon") );
+		setWindowIcon( QGuiApplication::windowIcon() );
+	}
+	else if( VeyonCore::component() == VeyonCore::Component::Configurator )
+	{
+		setWindowTitle( tr("NextSpace Classroom Administration Logon") );
+		setWindowIcon( QGuiApplication::windowIcon() );
+	}
 
 	ui->username->setText(VeyonCore::platform().userFunctions().queryCurrentUserProperty(PlatformUserFunctions::UserProperty::LoginName));
 

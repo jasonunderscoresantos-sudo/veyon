@@ -40,6 +40,8 @@ MainToolBar::MainToolBar( QWidget* parent ) :
 {
 	setExpanded();
 	setIconSize(QSize(32, 32));
+	// NextSpace accessibility: announce the toolbar by its role; the upstream window title is left unchanged
+	setAccessibleName( tr( "Teacher controls" ) );
 
 	ToolButton::setToolTipsDisabled( m_mainWindow->masterCore().userConfig().noToolTips() );
 	ToolButton::setIconOnlyMode( m_mainWindow, m_mainWindow->masterCore().userConfig().toolButtonIconOnlyMode() );
@@ -103,6 +105,7 @@ void MainToolBar::updateMinimumSize()
 void MainToolBar::contextMenuEvent( QContextMenuEvent* event )
 {
 	QMenu menu( this );
+	menu.setAccessibleName( tr( "Toolbar options" ) );
 
 	auto toolTipAction = menu.addAction(tr("Disable tooltips"), this, &MainToolBar::toggleToolTips);
 	toolTipAction->setCheckable( true );

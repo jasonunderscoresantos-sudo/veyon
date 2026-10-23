@@ -60,7 +60,8 @@ if(VEYON_BUILD_WINDOWS)
 	set_target_properties(veyon-core PROPERTIES PREFIX "")
 	add_windows_resources(veyon-core
 		NAME VeyonCore
-		DESCRIPTION "Veyon Core Library")
+		DESCRIPTION "NextSpace Classroom Management Core Library"
+		NEXTSPACE_COMPONENT)
 	if(NOT WITH_CORE_ONLY)
 		install(TARGETS veyon-core RUNTIME DESTINATION ${VEYON_LIB_DIR})
 	endif()

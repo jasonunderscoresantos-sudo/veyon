@@ -51,7 +51,7 @@ public:
 
 	QString description() const override
 	{
-		return tr( "Interactive shell and script execution for Veyon CLI" );
+		return tr( "Interactive shell and script execution for NextSpace Classroom Management CLI" );
 	}
 
 	QString vendor() const override

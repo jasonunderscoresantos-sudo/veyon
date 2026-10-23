@@ -4,5 +4,14 @@
         <file>presentation-fullscreen.png</file>
         <file>presentation-window.png</file>
         <file>window-duplicate.png</file>
+        <file>branding/nextspace-student-agent-16.png</file>
+        <file>branding/nextspace-student-agent-20.png</file>
+        <file>branding/nextspace-student-agent-24.png</file>
+        <file>branding/nextspace-student-agent-32.png</file>
+        <file>branding/nextspace-student-agent-40.png</file>
+        <file>branding/nextspace-student-agent-48.png</file>
+        <file>branding/nextspace-student-agent-64.png</file>
+        <file>branding/nextspace-student-agent-128.png</file>
+        <file>branding/nextspace-student-agent-256.png</file>
     </qresource>
 </RCC>

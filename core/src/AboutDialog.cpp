@@ -24,6 +24,10 @@
 
 #include <QDesktopServices>
 #include <QFile>
+#include <QGuiApplication>
+#include <QIcon>
+#include <QPainter>
+#include <QPixmap>
 
 #include "AboutDialog.h"
 #include "VeyonCore.h"
@@ -40,6 +44,84 @@ AboutDialog::AboutDialog( QWidget *parent ) :
 	setWindowTitle(tr("About Veyon %1").arg(VeyonCore::versionString()));
 
 	ui->versionLabel->setText( VeyonCore::versionString() );
+
+	// The branding resources belong to Master. Other components retain their UI.
+	if( VeyonCore::component() == VeyonCore::Component::Master )
+	{
+		setWindowTitle( tr("About NextSpace Teacher Console") );
+		setWindowIcon( QGuiApplication::windowIcon() );
+		// NextSpace dark mode: runtime copies of the four About tab icons in the tab widget's text color. Each copy
+		// keeps its source pixel size, device-pixel ratio and alpha; the source icons and light mode are unchanged.
+		if( VeyonCore::useDarkMode() )
+		{
+			const auto tint = ui->tabWidget->palette().color( QPalette::WindowText );
+			const std::pair<int, QString> tabIcons[] = {
+				{ 0, QStringLiteral(":/core/help-about.png") },
+				{ 1, QStringLiteral(":/core/user-group-new.png") },
+				{ 2, QStringLiteral(":/core/languages.png") },
+				{ 3, QStringLiteral(":/core/license.png") } };
+			for( const auto& [index, resource] : tabIcons )
+			{
+				const QPixmap source( resource );
+				QPixmap tinted( source.size() );
+				tinted.setDevicePixelRatio( source.devicePixelRatio() );
+				tinted.fill( Qt::transparent );
+				QPainter painter( &tinted );
+				painter.drawPixmap( 0, 0, source );
+				painter.setCompositionMode( QPainter::CompositionMode_SourceIn );
+				painter.fillRect( tinted.rect(), tint );
+				painter.end();
+				ui->tabWidget->setTabIcon( index, QIcon( tinted ) );
+			}
+		}
+		auto logo = QPixmap( QStringLiteral(":/master/branding/nextspace-classroom-logo.png") )
+			.scaled( QSize(160, 120) * devicePixelRatioF(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
+		logo.setDevicePixelRatio( devicePixelRatioF() );
+		ui->label->setPixmap( logo );
+		// NextSpace dark mode: the unchanged logo on a light Surface plate (Border token, 10 px radius, 8 px clear
+		// space)
+		if( VeyonCore::useDarkMode() )
+		{
+			ui->label->setStyleSheet( QStringLiteral(
+				"QLabel { background-color: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 10px; padding: 8px; }" ) );
+		}
+		ui->label_2->setText( QStringLiteral("NextSpace Teacher Console") );
+		ui->label_3->setText( QStringLiteral("NextSpace Classroom Management — EduLearn Technologies Inc") );
+		ui->label_3->setWordWrap( true );
+		ui->versionLabel->setText( tr("Development build based on Veyon %1").arg(VeyonCore::versionString()) );
+		ui->versionLabel->setWordWrap( true );
+		ui->label_4->setText( QStringLiteral(
+			"<a href=\"https://edulearntechnologies.com\">edulearntechnologies.com</a><br>"
+			"<a href=\"mailto:support@edulearntechnologies.com\">support@edulearntechnologies.com</a>") );
+		ui->label_4->setWordWrap( true );
+		ui->label_9->setText( tr("Website / support:") );
+		ui->donateButton->hide();
+		ui->label_5->setText( tr("For NextSpace translation support, contact support@edulearntechnologies.com. "
+			"Upstream contributors and license information are retained in their respective tabs.") );
+	}
+	// The Configurator owns its own copy of the logo and uses its Administration application icon.
+	else if( VeyonCore::component() == VeyonCore::Component::Configurator )
+	{
+		setWindowTitle( tr("About NextSpace Classroom Administration") );
+		setWindowIcon( QGuiApplication::windowIcon() );
+		auto logo = QPixmap( QStringLiteral(":/configurator/branding/nextspace-classroom-logo.png") )
+			.scaled( QSize(160, 120) * devicePixelRatioF(), Qt::KeepAspectRatio, Qt::SmoothTransformation );
+		logo.setDevicePixelRatio( devicePixelRatioF() );
+		ui->label->setPixmap( logo );
+		ui->label_2->setText( QStringLiteral("NextSpace Classroom Administration") );
+		ui->label_3->setText( QStringLiteral("NextSpace Classroom Management — EduLearn Technologies Inc") );
+		ui->label_3->setWordWrap( true );
+		ui->versionLabel->setText( tr("Development build based on Veyon %1").arg(VeyonCore::versionString()) );
+		ui->versionLabel->setWordWrap( true );
+		ui->label_4->setText( QStringLiteral(
+			"<a href=\"https://edulearntechnologies.com\">edulearntechnologies.com</a><br>"
+			"<a href=\"mailto:support@edulearntechnologies.com\">support@edulearntechnologies.com</a>") );
+		ui->label_4->setWordWrap( true );
+		ui->label_9->setText( tr("Website / support:") );
+		ui->donateButton->hide();
+		ui->label_5->setText( tr("For NextSpace translation support, contact support@edulearntechnologies.com. "
+			"Upstream contributors and license information are retained in their respective tabs.") );
+	}
 
 	QFile authors( QStringLiteral( ":/CONTRIBUTORS" ) );
 	if (authors.open(QFile::ReadOnly))

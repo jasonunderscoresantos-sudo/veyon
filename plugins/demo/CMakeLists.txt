@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(demo
 	NAME Demo
+	DESCRIPTION "NextSpace Classroom Management - Broadcast Plugin"
 	SOURCES
 	DemoFeaturePlugin.cpp
 	DemoConfigurationPage.cpp

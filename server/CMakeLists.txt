@@ -2,6 +2,9 @@ include(BuildVeyonApplication)
 
 build_veyon_application(veyon-server
 	NAME Server
+	DESCRIPTION "NextSpace Student Agent Server"
+	WINDOWS_ICON resources/branding/nextspace-student-agent.ico
+	NEXTSPACE_ROLE
 	SOURCES
 	src/ComputerControlClient.cpp
 	src/ComputerControlClient.h

@@ -45,6 +45,7 @@ ComputerMonitoringWidget::ComputerMonitoringWidget( QWidget *parent ) :
 	const auto computerMonitoringThumbnailSpacing = VeyonCore::config().computerMonitoringThumbnailSpacing();
 
 	setContextMenuPolicy( Qt::CustomContextMenu );
+	m_featureMenu->setAccessibleName( tr( "Computer actions" ) );
 	setAcceptDrops( true );
 	setDragEnabled( true );
 	setDragDropMode( QAbstractItemView::DropOnly );
@@ -290,6 +291,7 @@ void ComputerMonitoringWidget::addFeatureToMenu( const Feature& feature, const Q
 void ComputerMonitoringWidget::addSubFeaturesToMenu( const Feature& parentFeature, const FeatureList& subFeatures, const QString& label )
 {
 	auto menu = m_featureMenu->addMenu( QIcon( parentFeature.iconUrl() ), label );
+	menu->setAccessibleName( label );
 
 	for( const auto& subFeature : subFeatures )
 	{

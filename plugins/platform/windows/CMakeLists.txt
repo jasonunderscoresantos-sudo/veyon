@@ -5,6 +5,7 @@ find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 
 build_veyon_plugin(windows-platform
 	NAME WindowsPlatform
+	DESCRIPTION "NextSpace Classroom Management - Windows Platform Plugin"
 	SOURCES
 	WindowsPlatformPlugin.cpp
 	WindowsPlatformConfigurationPage.h
@@ -67,8 +68,26 @@ target_include_directories(windows-platform PRIVATE
 	${ultravnc_DIR}
 	)
 
+# The local Windows development workspace keeps the Interception SDK beside the
+# Veyon source tree. Official packaging supplies this dependency separately.
+set(NEXTSPACE_INTERCEPTION_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/../dependencies/Interception/Interception/library")
+if(EXISTS "${NEXTSPACE_INTERCEPTION_LIBRARY_DIR}/interception.h")
+	target_include_directories(windows-platform PRIVATE "${NEXTSPACE_INTERCEPTION_LIBRARY_DIR}")
+	target_link_directories(windows-platform PRIVATE "${NEXTSPACE_INTERCEPTION_LIBRARY_DIR}/x64")
+endif()
+
 target_link_libraries(windows-platform PRIVATE -lws2_32 -lwtsapi32 -lnetapi32 -luserenv -limm32 -lntdll -linterception -liphlpapi -lsetupapi -lsecur32)
 target_link_libraries(windows-platform PRIVATE Qt6::GuiPrivate)
 target_compile_definitions(windows-platform PRIVATE ULTRAVNC_VEYON_SUPPORT)
 target_compile_options(windows-platform PRIVATE "-Wno-unknown-pragmas;-flarge-source-files;-Wno-misleading-indentation")
+if(MINGW)
+	target_compile_options(windows-platform PRIVATE
+		-include "${CMAKE_SOURCE_DIR}/../tools/windows-platform-compat.h"
+		-Wno-error=unused-but-set-variable)
+endif()
 set_source_files_properties(WindowsNetworkFunctions.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE SKIP_PRECOMPILE_HEADERS TRUE)
+if(MINGW)
+	# The forced Win32 compatibility header is parsed before this source's
+	# INITGUID directive, so define it on the compiler command line as well.
+	set_source_files_properties(WindowsNetworkFunctions.cpp PROPERTIES COMPILE_DEFINITIONS INITGUID)
+endif()

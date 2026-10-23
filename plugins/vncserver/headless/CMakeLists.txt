@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(headless-vnc-server
 	NAME HeadlessVncServer
+	DESCRIPTION "NextSpace Classroom Management - Headless VNC Server Plugin"
 	SOURCES
 	HeadlessVncServer.cpp
 	HeadlessVncServer.h

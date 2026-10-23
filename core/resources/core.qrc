@@ -46,5 +46,6 @@
     <file>toast-warning.png</file>
     <file>view-fullscreen.png</file>
     <file>view-fullscreen-dark.png</file>
+    <file>branding/nextspace-classroom-16.png</file>
   </qresource>
 </RCC>

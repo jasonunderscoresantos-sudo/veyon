@@ -23,6 +23,7 @@
  */
 
 #include <QCoreApplication>
+#include <QCursor>
 #include <QDesktopServices>
 #include <QKeyEvent>
 #include <QMenu>
@@ -230,8 +231,10 @@ bool DesktopServicesFeaturePlugin::eventFilter( QObject* object, QEvent* event )
 
 		userConfig.flushStore();
 
+		// updateFeatures() replaces this menu, so reopen its replacement by name instead of keeping the pointer
+		const auto menuName = menu->objectName();
 		QTimer::singleShot(0, this, &DesktopServicesFeaturePlugin::updateFeatures);
-		QTimer::singleShot(0, this, [=, this]() { openMenu(menu->objectName()); });
+		QTimer::singleShot(0, this, [this, menuName]() { openMenu(menuName); });
 
 		return true;
 	}
@@ -254,18 +257,27 @@ void DesktopServicesFeaturePlugin::updateFeatures()
 	{
 		master->reloadSubFeatures();
 
-		auto startAppButton = master->mainWindow()->findChild<QToolButton *>( m_startAppFeature.name() );
-		if( startAppButton && startAppButton->menu() )
+		for( const auto& featureName : { m_startAppFeature.name(), m_openWebsiteFeature.name() } )
 		{
-			startAppButton->menu()->installEventFilter( this );
-		}
-
-		auto openWebsiteButton = master->mainWindow()->findChild<QToolButton *>( m_openWebsiteFeature.name() );
-		if( openWebsiteButton && openWebsiteButton->menu() )
-		{
-			openWebsiteButton->menu()->installEventFilter( this );
+			if( auto menu = findFeatureMenu( master->mainWindow(), featureName ) )
+			{
+				menu->installEventFilter( this );
+			}
 		}
 	}
+}
+
+
+
+QMenu* DesktopServicesFeaturePlugin::findFeatureMenu( QWidget* mainWindow, const QString& featureName )
+{
+	// the menu belongs to a toolbar button or, in NextSpace, is a submenu of the "More" toolbar menu
+	if( const auto button = mainWindow->findChild<QToolButton *>( featureName ) )
+	{
+		return button->menu();
+	}
+
+	return mainWindow->findChild<QMenu *>( featureName );
 }
 
 
@@ -279,6 +291,10 @@ void DesktopServicesFeaturePlugin::openMenu( const QString& objectName )
 		if( button && button->menu() )
 		{
 			button->showMenu();
+		}
+		else if( auto menu = findFeatureMenu( master->mainWindow(), objectName ) )
+		{
+			menu->popup( QCursor::pos() );
 		}
 	}
 }

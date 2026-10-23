@@ -107,7 +107,7 @@ void Screenshot::take( const ComputerControlInterface::Pointer& computerControlI
 
 	m_image = computerControlInterface->framebuffer();
 
-	QPixmap icon( QStringLiteral( ":/core/icon16.png" ) );
+	QPixmap icon( QStringLiteral( ":/core/branding/nextspace-classroom-16.png" ) );
 
 	QPainter painter( &m_image );
 

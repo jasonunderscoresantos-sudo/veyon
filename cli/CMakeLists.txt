@@ -16,8 +16,9 @@ set(cli_SOURCES
 
 build_veyon_application(veyon-cli
 	NAME CLI
-	DESCRIPTION "Veyon Command Line Interface (console version)"
+	DESCRIPTION "NextSpace Command Line Interface (console version)"
 	CONSOLE
+	NEXTSPACE_ROLE
 	SOURCES ${cli_SOURCES})
 
 target_compile_options(veyon-cli PRIVATE -Wno-date-time)
@@ -25,6 +26,7 @@ target_compile_options(veyon-cli PRIVATE -Wno-date-time)
 if(VEYON_BUILD_WINDOWS)
 	build_veyon_application(veyon-wcli
 		NAME WCLI
-		DESCRIPTION "Veyon Command Line Interface (non-console version)"
+		DESCRIPTION "NextSpace Command Line Interface (non-console version)"
+		NEXTSPACE_ROLE
 		SOURCES ${cli_SOURCES})
 endif()

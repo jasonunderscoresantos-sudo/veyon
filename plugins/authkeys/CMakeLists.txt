@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(authkeys
 	NAME AuthKeys
+	DESCRIPTION "NextSpace Classroom Management - Authentication Keys Plugin"
 	SOURCES
 	AuthKeysPlugin.cpp
 	AuthKeysConfigurationPage.cpp

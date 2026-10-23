@@ -23,6 +23,7 @@
  */
 
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QKeyEvent>
 #include <QMessageBox>
 
@@ -54,6 +55,15 @@ ComputerSelectPanel::ComputerSelectPanel( ComputerManager& computerManager, QWid
 	// set computer tree model as data model
 	ui->treeView->setModel( m_filterProxyModel );
 
+	// NextSpace header sizing: the .ui's 180-pixel minimum section size cannot fit the three headings in the default
+	// panel width; start the first two columns from their header hints (not row contents) and stretch the last one,
+	// leaving interactive resizing and horizontal scrolling available
+	QHeaderView* header = ui->treeView->header();
+	header->setMinimumSectionSize( 60 );
+	header->resizeSection( 0, header->sectionSizeHint( 0 ) );
+	header->resizeSection( 1, header->sectionSizeHint( 1 ) );
+	header->setStretchLastSection( true );
+
 	// set default sort order
 	ui->treeView->sortByColumn( 0, Qt::AscendingOrder );
 
@@ -61,6 +71,7 @@ ComputerSelectPanel::ComputerSelectPanel( ComputerManager& computerManager, QWid
 									   VeyonCore::config().allowAddingHiddenLocations() );
 
 	ui->filterLineEdit->setHidden( VeyonCore::config().hideComputerFilter() );
+	ui->filterLineEdit->setAccessibleName( tr( "Search computers" ) );
 
 	connect( ui->filterLineEdit, &QLineEdit::textChanged,
 			 this, &ComputerSelectPanel::updateFilter );

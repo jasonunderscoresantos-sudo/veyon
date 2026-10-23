@@ -9,7 +9,9 @@ endif()
 
 build_veyon_application(veyon-master
 	NAME Master
-	WINDOWS_ICON data/veyon-master.ico
+	DESCRIPTION "NextSpace Teacher Console"
+	WINDOWS_ICON resources/branding/nextspace-teacher-console.ico
+	NEXTSPACE_ROLE
 	SOURCES
 	${master_SOURCES}
 	${master_RESOURCES})

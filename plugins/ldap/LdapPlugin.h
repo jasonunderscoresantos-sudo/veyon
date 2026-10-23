@@ -46,7 +46,7 @@ public:
 
 	QString description() const override
 	{
-		return tr("LDAP/AD support for Veyon");
+		return tr("LDAP/AD support for NextSpace Classroom Management");
 	}
 
 	QString vendor() const override

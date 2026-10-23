@@ -10,5 +10,15 @@
         <file>vcs-normal.png</file>
         <file>vcs-removed.png</file>
         <file>access-rule-ask.png</file>
+        <file>branding/nextspace-classroom-logo.png</file>
+        <file>branding/nextspace-classroom-administration-16.png</file>
+        <file>branding/nextspace-classroom-administration-20.png</file>
+        <file>branding/nextspace-classroom-administration-24.png</file>
+        <file>branding/nextspace-classroom-administration-32.png</file>
+        <file>branding/nextspace-classroom-administration-40.png</file>
+        <file>branding/nextspace-classroom-administration-48.png</file>
+        <file>branding/nextspace-classroom-administration-64.png</file>
+        <file>branding/nextspace-classroom-administration-128.png</file>
+        <file>branding/nextspace-classroom-administration-256.png</file>
     </qresource>
 </RCC>

@@ -124,7 +124,7 @@ bool RemoteAccessFeaturePlugin::startFeature( VeyonMasterInterface& master, cons
 	else
 	{
 		const auto hostAddress = QInputDialog::getText(master.mainWindow(),
-													   tr("Remote access"),
+													   tr("NextSpace Remote Access"),
 													   tr("No computer has been selected so you can enter a hostname "
 														  "or IP address of a computer for manual access:"));
 		if (hostAddress.isEmpty())

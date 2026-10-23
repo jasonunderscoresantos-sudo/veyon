@@ -191,9 +191,10 @@ void SystemTrayIcon::updateIcon(const QString& overlayIconUrl)
 
 		QIcon icon;
 
-		for(auto size : {16, 22, 32, 64})
+		// NextSpace: the tray icon only exists in the Student Agent worker, which bundles these resources.
+		for(auto size : {16, 20, 24, 32, 40, 48, 64})
 		{
-			QPixmap pixmap(QStringLiteral(":/core/icon%1.png").arg(size));
+			QPixmap pixmap(QStringLiteral(":/worker/branding/nextspace-student-agent-%1.png").arg(size));
 			if (overlayIcon.isNull() == false)
 			{
 				QPainter painter(&pixmap);

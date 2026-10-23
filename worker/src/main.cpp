@@ -34,7 +34,13 @@ int main( int argc, char **argv )
 	VeyonCore::setupApplicationParameters();
 
 	QApplication app( argc, argv );
-	app.setWindowIcon( QIcon( QStringLiteral(":/core/icon64.png") ) );
+	// NextSpace: worker windows open in the student's session, so they inherit the Student Agent icon.
+	QIcon appIcon;
+	for( const auto size : { 16, 20, 24, 32, 40, 48, 64, 128, 256 } )
+	{
+		appIcon.addFile( QStringLiteral(":/worker/branding/nextspace-student-agent-%1.png").arg(size), QSize(size, size) );
+	}
+	app.setWindowIcon( appIcon );
 
 	const auto arguments = app.arguments();
 

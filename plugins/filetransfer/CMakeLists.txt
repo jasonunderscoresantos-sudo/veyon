@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(filetransfer
 	NAME FileTransfer
+	DESCRIPTION "NextSpace Classroom Management - File Transfer Plugin"
 	SOURCES
 	FileTransferPlugin.cpp
 	FileTransferPlugin.h

@@ -29,12 +29,12 @@
 ServiceControlCommands::ServiceControlCommands( QObject* parent ) :
 	QObject( parent ),
 	m_commands( {
-{ QStringLiteral("register"), tr( "Register Veyon Service" ) },
-{ QStringLiteral("unregister"), tr( "Unregister Veyon Service" ) },
-{ QStringLiteral("start"), tr( "Start Veyon Service" ) },
-{ QStringLiteral("stop"), tr( "Stop Veyon Service" ) },
-{ QStringLiteral("restart"), tr( "Restart Veyon Service" ) },
-{ QStringLiteral("status"), tr( "Query status of Veyon Service" ) },
+{ QStringLiteral("register"), tr( "Register NextSpace Student Agent" ) },
+{ QStringLiteral("unregister"), tr( "Unregister NextSpace Student Agent" ) },
+{ QStringLiteral("start"), tr( "Start NextSpace Student Agent" ) },
+{ QStringLiteral("stop"), tr( "Stop NextSpace Student Agent" ) },
+{ QStringLiteral("restart"), tr( "Restart NextSpace Student Agent" ) },
+{ QStringLiteral("status"), tr( "Query status of NextSpace Student Agent" ) },
 				} )
 {
 }

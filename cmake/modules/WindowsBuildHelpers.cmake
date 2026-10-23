@@ -1,5 +1,5 @@
 function(add_windows_resources TARGET)
-	set(args_option REQUIRE_ADMINISTRATOR_PRIVILEGES CONSOLE)
+	set(args_option REQUIRE_ADMINISTRATOR_PRIVILEGES CONSOLE NEXTSPACE_ROLE NEXTSPACE_COMPONENT)
 	set(args_single NAME DESCRIPTION WINDOWS_ICON)
 	set(args_multi)
 
@@ -13,7 +13,22 @@ function(add_windows_resources TARGET)
 	endif()
 
 	if (NOT arg_DESCRIPTION)
+		if (arg_NEXTSPACE_COMPONENT)
+			message(FATAL_ERROR "No DESCRIPTION given for NextSpace component ${TARGET}")
+		endif()
 		set(arg_DESCRIPTION "Veyon ${arg_NAME}")
+	endif()
+
+	set(VERSIONINFO_COMMENTS "Virtual Eye On Networks (https://veyon.io)")
+	set(VERSIONINFO_COMPANY "Veyon Solutions")
+	set(VERSIONINFO_PRODUCT "Veyon")
+	set(VERSIONINFO_PRODUCT_VERSION "${VERSION_STRING}")
+	if (arg_NEXTSPACE_ROLE OR arg_NEXTSPACE_COMPONENT)
+		# NextSpace role executables and component DLLs: product/publisher identity; the version stays labelled as upstream provenance
+		set(VERSIONINFO_COMMENTS "NextSpace Classroom Management, based on Veyon (https://veyon.io)")
+		set(VERSIONINFO_COMPANY "EduLearn Technologies Inc")
+		set(VERSIONINFO_PRODUCT "NextSpace Classroom Management")
+		set(VERSIONINFO_PRODUCT_VERSION "Development build based on Veyon ${VERSION_STRING}")
 	endif()
 
 	if (arg_CONSOLE)
@@ -45,10 +60,10 @@ function(add_windows_resources TARGET)
 		"	BEGIN\n"
 		"		BLOCK \"040904E4\"\n"
 		"		BEGIN\n"
-		"			VALUE \"Comments\",         \"Virtual Eye On Networks (https://veyon.io)\\0\"\n"
-		"			VALUE \"CompanyName\",      \"Veyon Solutions\\0\"\n"
-		"			VALUE \"ProductName\",      \"Veyon\\0\"\n"
-		"			VALUE \"ProductVersion\",   \"${VERSION_STRING}\\0\"\n"
+		"			VALUE \"Comments\",         \"${VERSIONINFO_COMMENTS}\\0\"\n"
+		"			VALUE \"CompanyName\",      \"${VERSIONINFO_COMPANY}\\0\"\n"
+		"			VALUE \"ProductName\",      \"${VERSIONINFO_PRODUCT}\\0\"\n"
+		"			VALUE \"ProductVersion\",   \"${VERSIONINFO_PRODUCT_VERSION}\\0\"\n"
 		"			VALUE \"FileDescription\",  \"${arg_DESCRIPTION}\\0\"\n"
 		"			VALUE \"FileVersion\",      \"${VERSION_STRING}\\0\"\n"
 		"			VALUE \"LegalCopyright\",   \"Copyright (c) 2017-2026 Veyon Solutions / Tobias Junghans\\0\"\n"

@@ -4,6 +4,7 @@ add_subdirectory(kldap)
 
 build_veyon_plugin(ldap
 	NAME Ldap
+	DESCRIPTION "NextSpace Classroom Management - LDAP/Active Directory Plugin"
 	SOURCES
 	LdapPlugin.cpp
 	LdapPlugin.h

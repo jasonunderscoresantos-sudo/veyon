@@ -29,8 +29,10 @@
 #include "ComputerControlInterface.h"
 
 class QButtonGroup;
+class QMenu;
 class QToolButton;
 
+class ToolButton;
 class VeyonMaster;
 
 namespace Ui {
@@ -77,8 +79,15 @@ private:
 		return "originalSize";
 	}
 
+	static bool isMoreMenuFeature( const Feature& feature );
+	QString toolBarLabel( const Feature& feature ) const;
+	QString toolBarActiveLabel( const Feature& feature ) const;
+
 	void addFeaturesToToolBar();
 	void addSubFeaturesToToolButton( QToolButton* button, const Feature& parentFeature );
+	void addSubFeatureActions( QMenu* menu, const Feature& parentFeature, const FeatureList& subFeatures,
+							   QToolButton* modeButton );
+	void reloadMoreMenu();
 
 	void updateModeButtonGroup();
 
@@ -90,5 +99,6 @@ private:
 	VeyonMaster& m_master;
 
 	QButtonGroup* m_modeGroup;
+	ToolButton* m_moreButton{nullptr};
 
 } ;

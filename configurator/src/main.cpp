@@ -23,6 +23,7 @@
  */
 
 #include <QApplication>
+#include <QIcon>
 #include <QMessageBox>
 
 #include "VeyonConfiguration.h"
@@ -38,6 +39,15 @@ int main( int argc, char **argv )
 	VeyonCore::setupApplicationParameters();
 
 	QApplication app( argc, argv );
+
+	// Set before VeyonCore so early privilege/error dialogs already use the Administration icon.
+	// No application display name: Qt would append it to every window title of this process.
+	QIcon appIcon;
+	for( const auto size : { 16, 20, 24, 32, 40, 48, 64, 128, 256 } )
+	{
+		appIcon.addFile( QStringLiteral(":/configurator/branding/nextspace-classroom-administration-%1.png").arg(size), QSize(size, size) );
+	}
+	app.setWindowIcon( appIcon );
 
 	VeyonCore core( &app, VeyonCore::Component::Configurator, QStringLiteral("Configurator") );
 
@@ -65,8 +75,8 @@ int main( int argc, char **argv )
 		QMessageBox::critical(nullptr,
 							  MainWindow::tr("Configuration not writable"),
 							  MainWindow::tr("The local configuration backend reported that the "
-											 "configuration is not writable! Please run Veyon "
-											 "Configurator with higher privileges."));
+											 "configuration is not writable! Please run NextSpace "
+											 "Classroom Administration with higher privileges."));
 		return -1;
 	}
 

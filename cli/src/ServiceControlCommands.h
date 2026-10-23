@@ -51,7 +51,7 @@ public:
 
 	QString description() const override
 	{
-		return tr( "Configure and control Veyon service" );
+		return tr( "Configure and control NextSpace Student Agent" );
 	}
 
 	QString vendor() const override
@@ -71,7 +71,7 @@ public:
 
 	QString commandLineModuleHelp() const override
 	{
-		return tr( "Commands for configuring and controlling Veyon Service" );
+		return tr( "Commands for configuring and controlling NextSpace Student Agent" );
 	}
 
 	QStringList commands() const override

@@ -2,6 +2,7 @@ include(BuildVeyonPlugin)
 
 build_veyon_plugin(builtindirectory
 	NAME BuiltinDirectory
+	DESCRIPTION "NextSpace Classroom Management - Built-in Directory Plugin"
 	SOURCES
 	BuiltinDirectoryPlugin.cpp
 	BuiltinDirectoryConfigurationPage.cpp

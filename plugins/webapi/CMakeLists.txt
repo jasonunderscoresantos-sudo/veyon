@@ -14,6 +14,7 @@ if(Qt6HttpServer_DIR OR Qt5HttpServer_DIR OR (Qt5Core_VERSION VERSION_GREATER 5.
 
 	build_veyon_plugin(webapi
 		NAME WebApi
+		DESCRIPTION "NextSpace Classroom Management - Web API Plugin"
 		SOURCES
 		WebApiPlugin.cpp
 		WebApiPlugin.h

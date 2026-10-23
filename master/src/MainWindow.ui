@@ -11,11 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string notr="true">Veyon Master</string>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="../../core/resources/core.qrc">
-    <normaloff>:/core/icon64.png</normaloff>:/core/icon64.png</iconset>
+   <string notr="true">NextSpace Teacher Console</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="centralLayout">
@@ -87,19 +83,6 @@
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
-      <widget class="QLabel" name="spacerLabel1">
-       <property name="geometry">
-        <rect>
-         <x>430</x>
-         <y>570</y>
-         <width>31</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
       <widget class="QToolButton" name="aboutButton">
        <property name="geometry">
         <rect>
@@ -110,7 +93,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>About Veyon</string>
+        <string>About NextSpace Teacher Console</string>
        </property>
        <property name="text">
         <string>About</string>
@@ -118,16 +101,6 @@
        <property name="icon">
         <iconset resource="../../core/resources/core.qrc">
          <normaloff>:/core/help-about.png</normaloff>:/core/help-about.png</iconset>
-       </property>
-      </widget>
-      <widget class="QLabel" name="spacerLabel3">
-       <property name="geometry">
-        <rect>
-         <x>940</x>
-         <y>570</y>
-         <width>99</width>
-         <height>30</height>
-        </rect>
        </property>
       </widget>
       <widget class="QLineEdit" name="filterLineEdit">
@@ -141,19 +114,6 @@
        </property>
        <property name="placeholderText">
         <string>Search users and computers</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="spacerLabel2">
-       <property name="geometry">
-        <rect>
-         <x>620</x>
-         <y>560</y>
-         <width>31</width>
-         <height>30</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
        </property>
       </widget>
       <widget class="QToolButton" name="alignComputersButton">
@@ -196,16 +156,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
        </property>
        <property name="checkable">
         <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="spacerLabel4">
-       <property name="geometry">
-        <rect>
-         <x>1170</x>
-         <y>570</y>
-         <width>99</width>
-         <height>30</height>
-        </rect>
        </property>
       </widget>
       <widget class="QToolButton" name="filterPoweredOnComputersButton">

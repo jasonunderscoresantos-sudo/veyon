@@ -3,11 +3,7 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowTitle">
-   <string>Veyon Configurator</string>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="../resources/configurator.qrc">
-    <normaloff>:/configurator/veyon-configurator.png</normaloff>:/configurator/veyon-configurator.png</iconset>
+   <string>NextSpace Classroom Administration</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
@@ -57,7 +53,7 @@
       </item>
       <item>
        <property name="text">
-        <string>Service</string>
+        <string>Student Agent</string>
        </property>
        <property name="icon">
         <iconset resource="../resources/configurator.qrc">
@@ -69,7 +65,7 @@
       </item>
       <item>
        <property name="text">
-        <string>Master</string>
+        <string>Teacher Console</string>
        </property>
        <property name="icon">
         <iconset resource="../resources/configurator.qrc">
@@ -220,7 +216,7 @@
      <normaloff>:/core/help-about.png</normaloff>:/core/help-about.png</iconset>
    </property>
    <property name="text">
-    <string>About Veyon</string>
+    <string>About NextSpace Classroom Administration</string>
    </property>
   </action>
   <action name="actionAboutQt">

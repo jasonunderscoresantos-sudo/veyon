@@ -22,7 +22,9 @@
  *
  */
 
+#ifndef INITGUID
 #define INITGUID
+#endif
 #include <winsock2.h>
 #include <windows.h>
 #include <netfw.h>

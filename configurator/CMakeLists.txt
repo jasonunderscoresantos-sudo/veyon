@@ -2,8 +2,10 @@ include(BuildVeyonApplication)
 
 build_veyon_application(veyon-configurator
 	NAME Configurator
-	WINDOWS_ICON "data/veyon-configurator.ico"
+	DESCRIPTION "NextSpace Classroom Administration"
+	WINDOWS_ICON "data/nextspace-classroom-administration.ico"
 	REQUIRE_ADMINISTRATOR_PRIVILEGES
+	NEXTSPACE_ROLE
 	SOURCES
 	src/AccessControlPage.cpp
 	src/AccessControlPage.h
