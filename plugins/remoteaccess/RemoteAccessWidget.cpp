@@ -42,6 +42,7 @@
 #include "PlatformCoreFunctions.h"
 #include "ToolButton.h"
 #include "Screenshot.h"
+#include "TeacherActionIcons.h"
 
 
 // toolbar for remote-control-widget
@@ -50,14 +51,30 @@ RemoteAccessWidgetToolBar::RemoteAccessWidgetToolBar( RemoteAccessWidget* parent
 	QWidget( parent ),
 	m_parent( parent ),
 	m_showHideTimeLine( ShowHideAnimationDuration, this ),
-	m_viewOnlyButton( showViewOnlyToggleButton ? new ToolButton( QPixmap( QStringLiteral(":/remoteaccess/kmag.png") ), tr( "View only" ), tr( "Remote control" ) ) : nullptr ),
-	m_selectScreenButton( new ToolButton( QPixmap( QStringLiteral(":/remoteaccess/preferences-system-windows-effect-desktopgrid.png") ), tr( "Select screen" ) ) ),
-	m_sendShortcutButton( new ToolButton( QPixmap( QStringLiteral(":/remoteaccess/preferences-desktop-keyboard.png") ), tr( "Send shortcut" ) ) ),
-	m_screenshotButton( new ToolButton( QPixmap( QStringLiteral(":/remoteaccess/camera-photo.png") ), tr( "Screenshot" ) ) ),
-	m_fullScreenButton( new ToolButton( QPixmap( QStringLiteral(":/core/view-fullscreen.png") ), tr( "Fullscreen" ), tr( "Window" ) ) ),
-	m_exitButton( new ToolButton( QPixmap( QStringLiteral(":/remoteaccess/application-exit.png") ), tr( "Exit" ) ) ),
+	m_viewOnlyButton( showViewOnlyToggleButton ? new ToolButton( QIcon(), tr( "View only" ), tr( "Remote control" ) ) : nullptr ),
+	m_selectScreenButton( new ToolButton( QIcon(), tr( "Select screen" ) ) ),
+	m_sendShortcutButton( new ToolButton( QIcon(), tr( "Send shortcut" ) ) ),
+	m_screenshotButton( new ToolButton( QIcon(), tr( "Screenshot" ) ) ),
+	m_fullScreenButton( new ToolButton( QIcon(), tr( "Fullscreen" ), tr( "Window" ) ) ),
+	m_exitButton( new ToolButton( QIcon(), tr( "Exit" ) ) ),
 	m_screenSelectActions( new QActionGroup(this) )
 {
+	// NextSpace Tabler action icons (V3aw): each available button draws its role from its own palette at 20 logical
+	// px; this runs before the existing checked-state setup, so both toggles show the command their label offers
+	const auto setActionIcon = []( ToolButton* button, TeacherActionIcons::RemoteAccessControl control ) {
+		if( button )
+		{
+			button->setIcon( TeacherActionIcons::forRemoteAccessControl( control, button->palette() ) );
+			button->setIconSize( QSize( 20, 20 ) );
+		}
+	};
+	setActionIcon( m_viewOnlyButton, TeacherActionIcons::RemoteAccessControl::ViewOnlyToggle );
+	setActionIcon( m_selectScreenButton, TeacherActionIcons::RemoteAccessControl::SelectScreen );
+	setActionIcon( m_sendShortcutButton, TeacherActionIcons::RemoteAccessControl::SendShortcut );
+	setActionIcon( m_screenshotButton, TeacherActionIcons::RemoteAccessControl::Screenshot );
+	setActionIcon( m_fullScreenButton, TeacherActionIcons::RemoteAccessControl::FullscreenToggle );
+	setActionIcon( m_exitButton, TeacherActionIcons::RemoteAccessControl::Exit );
+
 	setAttribute( Qt::WA_NoSystemBackground, true );
 	move( 0, 0 );
 	show();

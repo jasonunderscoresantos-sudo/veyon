@@ -135,20 +135,12 @@
         <property name="toolTip">
          <string>Add selected computers</string>
         </property>
-        <property name="icon">
-         <iconset resource="../../core/resources/core.qrc">
-          <normaloff>:/core/go-up.png</normaloff>:/core/go-up.png</iconset>
-        </property>
        </widget>
       </item>
       <item>
        <widget class="QToolButton" name="removeButton">
         <property name="toolTip">
          <string>Remove selected computers</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../core/resources/core.qrc">
-          <normaloff>:/core/go-down.png</normaloff>:/core/go-down.png</iconset>
         </property>
        </widget>
       </item>
@@ -169,11 +161,6 @@
        <widget class="QToolButton" name="realtimeViewButton">
         <property name="toolTip">
          <string>Update computers in realtime</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources/master.qrc">
-          <normaloff>:/master/update-realtime-disabled.png</normaloff>
-          <normalon>:/master/update-realtime-enabled.png</normalon>:/master/update-realtime-disabled.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>

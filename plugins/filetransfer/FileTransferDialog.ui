@@ -6,10 +6,6 @@
   <property name="windowTitle">
    <string>File transfer</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="filetransfer.qrc">
-    <normaloff>:/filetransfer/distribute-files.png</normaloff>:/filetransfer/distribute-files.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="optionsGroupBox">

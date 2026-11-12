@@ -34,3 +34,6 @@ build_veyon_plugin(filetransfer
 	ProgressItemDelegate.h
 	filetransfer.qrc
 	)
+
+# Teacher action icons for the Collect Files destination actions (V3AM-058)
+target_link_libraries(filetransfer PRIVATE nextspace-action-icons)

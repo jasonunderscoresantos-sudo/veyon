@@ -31,6 +31,7 @@
 #include "VeyonServiceControl.h"
 #include "VncServerPluginInterface.h"
 #include "Configuration/UiMapping.h"
+#include "NextSpaceActionIcons.h"
 
 #include "ui_ServiceConfigurationPage.h"
 
@@ -41,6 +42,11 @@ ServiceConfigurationPage::ServiceConfigurationPage() :
 	m_vncServerPluginConfigurationWidget( nullptr )
 {
 	ui->setupUi(this);
+
+	// V3bh: palette-aware Student Agent service command icons at 20 logical px for the two textual Start/Stop service
+	// buttons (their visible labels stay the primary cues); only then may palette events refresh the icons (see event())
+	updateCommandIcons();
+	m_commandIconsReady = true;
 
 	Configuration::UiMapping::setFlags(ui->networkPortNumbersGroupBox, Configuration::Property::Flag::Advanced);
 	Configuration::UiMapping::setFlags(ui->miscSettingsGroupBox, Configuration::Property::Flag::Advanced);
@@ -165,4 +171,37 @@ void ServiceConfigurationPage::populateVncServerPluginComboBox()
 			ui->vncServerPlugin->addItem( pluginInterface->description(), pluginInterface->uid() );
 		}
 	}
+}
+
+
+
+bool ServiceConfigurationPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the two
+	// service command icons, which then runs after Qt has resolved the child buttons' palettes (a PaletteChange reaches
+	// the page before its children are updated); the event is neither consumed nor changed, and the two-second service
+	// state timer never redraws an icon
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void ServiceConfigurationPage::updateCommandIcons()
+{
+	// each service button renders its role in its own palette at 20 logical px; only the icon and its size change (the
+	// ServiceConfigurationPage.ui icons stay as unused fallback bytes), and no text, tab stop, enabled state, connection,
+	// service state or configuration is touched
+	using NextSpaceActionIcons::AdministrationStudentAgentCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationStudentAgentCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationStudentAgentCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->startService, AdministrationStudentAgentCommand::StartService );
+	assign( ui->stopService, AdministrationStudentAgentCommand::StopService );
 }

@@ -47,10 +47,6 @@
        <property name="text">
         <string>Auto</string>
        </property>
-       <property name="icon">
-        <iconset resource="../resources/master.qrc">
-         <normaloff>:/master/zoom-fit-best.png</normaloff>:/master/zoom-fit-best.png</iconset>
-       </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
@@ -98,10 +94,6 @@
        <property name="text">
         <string>About</string>
        </property>
-       <property name="icon">
-        <iconset resource="../../core/resources/core.qrc">
-         <normaloff>:/core/help-about.png</normaloff>:/core/help-about.png</iconset>
-       </property>
       </widget>
       <widget class="QLineEdit" name="filterLineEdit">
        <property name="geometry">
@@ -131,10 +123,6 @@
        <property name="toolTip">
         <string>Align computers to grid</string>
        </property>
-       <property name="icon">
-        <iconset resource="../resources/master.qrc">
-         <normaloff>:/master/align-grid.png</normaloff>:/master/align-grid.png</iconset>
-       </property>
       </widget>
       <widget class="QToolButton" name="useCustomComputerPositionsButton">
        <property name="geometry">
@@ -149,10 +137,6 @@
         <string>Use custom computer arrangement.
 
 Press and hold to load arrangement from a file or save current arrangement to a file.</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources/master.qrc">
-         <normaloff>:/master/exchange-positions-zorder.png</normaloff>:/master/exchange-positions-zorder.png</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -169,10 +153,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
        </property>
        <property name="toolTip">
         <string>Only show powered on computers</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../resources/master.qrc">
-         <normaloff>:/master/powered-on.png</normaloff>:/master/powered-on.png</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -211,10 +191,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
           <property name="text">
            <string>Locations &amp;&amp; computers</string>
           </property>
-          <property name="icon">
-           <iconset resource="../resources/master.qrc">
-            <normaloff>:/master/computers.png</normaloff>:/master/computers.png</iconset>
-          </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
@@ -227,10 +203,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
          <widget class="QToolButton" name="screenshotManagementPanelButton">
           <property name="text">
            <string>Screenshots</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../resources/master.qrc">
-            <normaloff>:/master/camera-photo.png</normaloff>:/master/camera-photo.png</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -245,10 +217,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
           <property name="text">
            <string>Slideshow</string>
           </property>
-          <property name="icon">
-           <iconset resource="../resources/master.qrc">
-            <normaloff>:/master/computer-slideshow.png</normaloff>:/master/computer-slideshow.png</iconset>
-          </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
@@ -261,10 +229,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
          <widget class="QToolButton" name="spotlightPanelButton">
           <property name="text">
            <string>Spotlight</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../resources/master.qrc">
-            <normaloff>:/master/spotlight.png</normaloff>:/master/spotlight.png</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -287,10 +251,6 @@ Press and hold to load arrangement from a file or save current arrangement to a 
        </property>
        <property name="toolTip">
         <string>Only show computers with logged on users</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../core/resources/core.qrc">
-         <normaloff>:/core/user-group-new.png</normaloff>:/core/user-group-new.png</iconset>
        </property>
        <property name="checkable">
         <bool>true</bool>

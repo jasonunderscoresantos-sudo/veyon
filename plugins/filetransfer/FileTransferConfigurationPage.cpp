@@ -25,6 +25,7 @@
 #include "FileSystemBrowser.h"
 #include "FileTransferConfiguration.h"
 #include "FileTransferConfigurationPage.h"
+#include "NextSpaceActionIcons.h"
 #include "Configuration/UiMapping.h"
 
 #include "ui_FileTransferConfigurationPage.h"
@@ -35,6 +36,20 @@ FileTransferConfigurationPage::FileTransferConfigurationPage( FileTransferConfig
 	m_configuration( configuration )
 {
 	ui->setupUi(this);
+
+	// V3bm: palette-aware File transfer directory command icons at 20 logical px; each icon-only button gets its exact
+	// translated tooltip, and its accessible name is that tooltip, so both cues stay identical; only then may palette
+	// events refresh the icons (see event()). The browse connections and hidden widgets below are unchanged
+	updateCommandIcons();
+	ui->browseDefaultSourceDirectory->setToolTip( tr( "Browse for default source directory" ) );
+	ui->browseDefaultSourceDirectory->setAccessibleName( ui->browseDefaultSourceDirectory->toolTip() );
+	ui->browseDestinationDirectory->setToolTip( tr( "Browse for file transfer destination directory" ) );
+	ui->browseDestinationDirectory->setAccessibleName( ui->browseDestinationDirectory->toolTip() );
+	ui->browseFilesToCollectSourceDirectory->setToolTip( tr( "Browse for files to collect source directory" ) );
+	ui->browseFilesToCollectSourceDirectory->setAccessibleName( ui->browseFilesToCollectSourceDirectory->toolTip() );
+	ui->browseCollectedFilesDestinationDirectory->setToolTip( tr( "Browse for collected files destination directory" ) );
+	ui->browseCollectedFilesDestinationDirectory->setAccessibleName( ui->browseCollectedFilesDestinationDirectory->toolTip() );
+	m_commandIconsReady = true;
 
 	connect(ui->browseDefaultSourceDirectory, &QAbstractButton::clicked,
 			this, &FileTransferConfigurationPage::browseDefaultSourceDirectory);
@@ -110,4 +125,41 @@ void FileTransferConfigurationPage::browseFilesToCollectSourceDirectory()
 void FileTransferConfigurationPage::browseCollectedFilesDestinationDirectory()
 {
 	FileSystemBrowser(FileSystemBrowser::ExistingDirectory, this).exec(ui->collectedFilesDestinationDirectory);
+}
+
+
+
+bool FileTransferConfigurationPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the four
+	// File transfer directory command icons, which then runs after Qt has resolved the child buttons' palettes (a
+	// PaletteChange reaches the page before its children are updated); the event is neither consumed nor changed, and
+	// the refresh never browses a directory, edits a line edit, reconnects or hides a control or reads or writes the
+	// configuration
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void FileTransferConfigurationPage::updateCommandIcons()
+{
+	// each File transfer directory button renders its own role in its own palette at 20 logical px; only the icon and
+	// its size change (the FileTransferConfigurationPage.ui document-open icons stay as unused fallback bytes), and no
+	// text, tooltip, accessible name, enabled state, visibility, line edit, browse target, connection or configuration
+	// is touched
+	using NextSpaceActionIcons::AdministrationFileTransferCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationFileTransferCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationFileTransferCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->browseDefaultSourceDirectory, AdministrationFileTransferCommand::BrowseDefaultSourceDirectory );
+	assign( ui->browseDestinationDirectory, AdministrationFileTransferCommand::BrowseDestinationDirectory );
+	assign( ui->browseFilesToCollectSourceDirectory, AdministrationFileTransferCommand::BrowseFilesToCollectSourceDirectory );
+	assign( ui->browseCollectedFilesDestinationDirectory, AdministrationFileTransferCommand::BrowseCollectedFilesDestinationDirectory );
 }

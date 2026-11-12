@@ -43,11 +43,19 @@ public:
 	void connectWidgetsToProperties() override;
 	void applyConfiguration() override;
 
+protected:
+	bool event( QEvent* event ) override;
+
 private:
 	void browseDefaultSourceDirectory();
 	void browseDestinationDirectory();
 	void browseFilesToCollectSourceDirectory();
 	void browseCollectedFilesDestinationDirectory();
+	void updateCommandIcons();
+
+	// V3bm: set once the UI exists, so palette events during construction never touch it; declared before the UI
+	// pointer, so it is initialised before the UI is created
+	bool m_commandIconsReady = false;
 
 	Ui::FileTransferConfigurationPage *ui;
 

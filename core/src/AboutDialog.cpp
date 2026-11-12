@@ -134,6 +134,14 @@ AboutDialog::AboutDialog( QWidget *parent ) :
 	{
 		ui->license->setPlainText(QString::fromUtf8(license.readAll()));
 	}
+
+	// NextSpace: third-party notices follow the unchanged GPL text; without the resource the GPL text stays as is
+	QFile thirdPartyNotices( QStringLiteral( ":/core/THIRD-PARTY-NOTICES.txt" ) );
+	if (thirdPartyNotices.open(QFile::ReadOnly))
+	{
+		ui->license->appendPlainText(QStringLiteral("\n\nThird-party notices — Tabler Icons v3.49.0\n\n") +
+									 QString::fromUtf8(thirdPartyNotices.readAll()));
+	}
 }
 
 

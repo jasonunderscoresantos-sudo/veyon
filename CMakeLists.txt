@@ -95,7 +95,8 @@ endif()
 # set up basic platform variables
 if(WIN32)
 	set(VEYON_BUILD_WINDOWS 1)
-	if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+	# classify by target pointer width: native MSYS2 reports AMD64, cross toolchains x86_64
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 		set(VEYON_BUILD_WIN64 1)
 		set(VEYON_WINDOWS_ARCH "win64")
 	else()
@@ -318,6 +319,7 @@ include(cmake/CPackDefinitions.cmake)
 # make sub-directories
 add_subdirectory(core)
 if(NOT WITH_CORE_ONLY)
+	add_subdirectory(common/nextspaceactionicons)
 	add_subdirectory(server)
 	add_subdirectory(service)
 	add_subdirectory(master)

@@ -9,6 +9,9 @@
    <iconset resource="demo.qrc">
     <normaloff>:/demo/window-duplicate.png</normaloff>:/demo/window-duplicate.png</iconset>
   </property>
+  <property name="nextspaceActionIconRole" stdset="0">
+   <string notr="true">Broadcast</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="topMargin">
     <number>0</number>

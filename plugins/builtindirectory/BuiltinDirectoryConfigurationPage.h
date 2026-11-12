@@ -44,6 +44,9 @@ public:
 	void connectWidgetsToProperties() override;
 	void applyConfiguration() override;
 
+protected:
+	bool event( QEvent* event ) override;
+
 private Q_SLOTS:
 	void addLocation();
 	void updateLocation();
@@ -59,9 +62,14 @@ private Q_SLOTS:
 private:
 	void populateLocations();
 	void populateComputers();
+	void updateCommandIcons();
 
 	NetworkObject currentLocationObject() const;
 	NetworkObject currentComputerObject() const;
+
+	// V3bk: set once the UI exists, so palette events during construction never touch it; declared before the UI
+	// pointer, so it is initialised before the UI is created
+	bool m_commandIconsReady = false;
 
 	Ui::BuiltinDirectoryConfigurationPage *ui;
 

@@ -33,6 +33,7 @@
 #include "Configuration/UiMapping.h"
 #include "AccessControlRuleEditDialog.h"
 #include "UserGroupsBackendManager.h"
+#include "NextSpaceActionIcons.h"
 
 #include "ui_AccessControlPage.h"
 
@@ -43,6 +44,15 @@ AccessControlPage::AccessControlPage() :
 	m_accessControlRulesTestDialog( this )
 {
 	ui->setupUi(this);
+
+	// V3bd: palette-aware Access Control command icons at 20 logical px and textual names for the two icon-only
+	// group-transfer buttons; only then may palette events refresh the icons (see event())
+	updateCommandIcons();
+	ui->addAccessGroupButton->setToolTip( tr( "Authorize selected group" ) );
+	ui->addAccessGroupButton->setAccessibleName( tr( "Authorize selected group" ) );
+	ui->removeAccessGroupButton->setToolTip( tr( "Remove selected authorized group" ) );
+	ui->removeAccessGroupButton->setAccessibleName( tr( "Remove selected authorized group" ) );
+	m_commandIconsReady = true;
 
 	ui->accessControlRulesView->setModel( &m_accessControlRulesModel );
 
@@ -313,4 +323,43 @@ void AccessControlPage::modifyAccessControlRules(const QJsonArray &accessControl
 void AccessControlPage::updateAccessControlRules()
 {
 	m_accessControlRulesModel.reload();
+}
+
+
+
+bool AccessControlPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the nine
+	// command icons, which then runs after Qt has resolved the child buttons' palettes (a PaletteChange reaches the page
+	// before its children are updated); the event is neither consumed nor changed
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void AccessControlPage::updateCommandIcons()
+{
+	// each command button renders its role in its own palette at 20 logical px; only the icon and its size change (the
+	// AccessControlPage.ui icons stay as unused fallback bytes), and no text, tooltip, tab stop, state or connection is
+	// touched
+	using NextSpaceActionIcons::AdministrationAccessControlCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationAccessControlCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationAccessControlCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->testUserGroupsAccessControlButton, AdministrationAccessControlCommand::Test );
+	assign( ui->testAccessControlRulesButton, AdministrationAccessControlCommand::Test );
+	assign( ui->addAccessGroupButton, AdministrationAccessControlCommand::AddAuthorizedGroup );
+	assign( ui->removeAccessGroupButton, AdministrationAccessControlCommand::RemoveAuthorizedGroup );
+	assign( ui->addAccessControlRuleButton, AdministrationAccessControlCommand::AddRule );
+	assign( ui->removeAccessControlRule, AdministrationAccessControlCommand::RemoveRule );
+	assign( ui->editAccessControlRuleButton, AdministrationAccessControlCommand::EditRule );
+	assign( ui->moveAccessControlRuleUpButton, AdministrationAccessControlCommand::MoveRuleUp );
+	assign( ui->moveAccessControlRuleDownButton, AdministrationAccessControlCommand::MoveRuleDown );
 }

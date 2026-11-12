@@ -32,6 +32,7 @@
 #include "ComputerItemDelegate.h"
 #include "ComputerMonitoringModel.h"
 #include "ComputerMonitoringWidget.h"
+#include "TeacherActionIcons.h"
 #include "VeyonMaster.h"
 #include "FeatureManager.h"
 #include "VeyonConfiguration.h"
@@ -281,7 +282,7 @@ void ComputerMonitoringWidget::populateFeatureMenu( const ComputerControlInterfa
 
 void ComputerMonitoringWidget::addFeatureToMenu( const Feature& feature, const QString& label )
 {
-	m_featureMenu->addAction(QIcon(feature.iconUrl()),
+	m_featureMenu->addAction(TeacherActionIcons::forFeature(feature, m_featureMenu->palette()),
 							 label,
 							 this, [=, this] () { runFeature(feature); });
 }
@@ -290,12 +291,12 @@ void ComputerMonitoringWidget::addFeatureToMenu( const Feature& feature, const Q
 
 void ComputerMonitoringWidget::addSubFeaturesToMenu( const Feature& parentFeature, const FeatureList& subFeatures, const QString& label )
 {
-	auto menu = m_featureMenu->addMenu( QIcon( parentFeature.iconUrl() ), label );
+	auto menu = m_featureMenu->addMenu( TeacherActionIcons::forFeature( parentFeature, m_featureMenu->palette() ), label );
 	menu->setAccessibleName( label );
 
 	for( const auto& subFeature : subFeatures )
 	{
-		menu->addAction(QIcon(subFeature.iconUrl()), subFeature.displayName(),
+		menu->addAction(TeacherActionIcons::forFeature(subFeature, menu->palette()), subFeature.displayName(),
 				#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
 						subFeature.shortcut(),
 				#endif

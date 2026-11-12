@@ -9,6 +9,9 @@
    <iconset resource="ldap.qrc">
     <normaloff>:/ldap/application-x-kexi-connectiondata.png</normaloff>:/ldap/application-x-kexi-connectiondata.png</iconset>
   </property>
+  <property name="nextspaceActionIconRole" stdset="0">
+   <string notr="true">LdapDirectory</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <property name="topMargin">
     <number>0</number>

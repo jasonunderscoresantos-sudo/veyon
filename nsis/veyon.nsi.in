@@ -173,6 +173,7 @@ File "veyon-worker.exe"
 File "*.dll"
 File "LICENSE.TXT"
 File "README.TXT"
+File "THIRD-PARTY-NOTICES.txt"
 # plugins
 SetOutPath "$INSTDIR\plugins"
 File "plugins/*.dll"

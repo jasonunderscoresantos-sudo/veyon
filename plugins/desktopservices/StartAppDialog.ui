@@ -6,10 +6,6 @@
   <property name="windowTitle">
    <string>Start application</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="desktopservices.qrc">
-    <normaloff>:/desktopservices/preferences-desktop-launch-feedback.png</normaloff>:/desktopservices/preferences-desktop-launch-feedback.png</iconset>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="6" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">

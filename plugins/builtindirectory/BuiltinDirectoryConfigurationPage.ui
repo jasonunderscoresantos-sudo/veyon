@@ -9,6 +9,9 @@
    <iconset resource="builtindirectory.qrc">
     <normaloff>:/builtindirectory/builtindirectory.png</normaloff>:/builtindirectory/builtindirectory.png</iconset>
   </property>
+  <property name="nextspaceActionIconRole" stdset="0">
+   <string notr="true">LocationsAndComputers</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="topMargin">
     <number>0</number>

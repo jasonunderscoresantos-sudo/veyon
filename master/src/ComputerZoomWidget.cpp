@@ -55,7 +55,6 @@ ComputerZoomWidget::ComputerZoomWidget( const ComputerControlInterface::Pointer&
 	connect( m_vncView->computerControlInterface().data(), &ComputerControlInterface::userChanged,
 			 this, &ComputerZoomWidget::updateComputerZoomWidgetTitle );
 
-	setWindowIcon( QPixmap( QStringLiteral(":/remoteaccess/kmag.png") ) );
 	setAttribute( Qt::WA_DeleteOnClose, true );
 
 	m_vncView->move( 0, 0 );

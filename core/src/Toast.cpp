@@ -140,6 +140,10 @@ Toast::Toast(QWidget* parent)
 	m_closeButton = new QPushButton(m_notification);
 	m_closeButton->setCursor(Qt::CursorShape::PointingHandCursor);
 	m_closeButton->setObjectName(QStringLiteral("toast-close-button"));
+	// V3bi: the icon-only close button gets an exact tooltip and accessible name
+	const auto closeText = tr("Close notification");
+	m_closeButton->setToolTip(closeText);
+	m_closeButton->setAccessibleName(closeText);
 	connect(m_closeButton, &QPushButton::clicked, this, &Toast::hide);
 
 	// Text and title labels

@@ -9,6 +9,9 @@
    <iconset resource="filetransfer.qrc">
     <normaloff>:/filetransfer/distribute-files-dark.png</normaloff>:/filetransfer/distribute-files-dark.png</iconset>
   </property>
+  <property name="nextspaceActionIconRole" stdset="0">
+   <string notr="true">FileTransfer</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="topMargin">
     <number>0</number>

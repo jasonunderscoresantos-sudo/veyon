@@ -30,6 +30,7 @@
 #include "FileCollection.h"
 
 class FileCollectController;
+class QPalette;
 
 class FileCollectTreeModel : public QAbstractItemModel
 {
@@ -42,7 +43,7 @@ public:
 		ColumnCount
 	};
 
-	FileCollectTreeModel(FileCollectController* controller, QObject* parent);
+	FileCollectTreeModel(FileCollectController* controller, const QPalette& palette, QObject* parent);
 	~FileCollectTreeModel() override = default;
 
 	QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const override;

@@ -2,10 +2,6 @@
 <ui version="4.0">
  <class>SlideshowPanel</class>
  <widget class="QWidget" name="SlideshowPanel">
-  <property name="windowIcon">
-   <iconset resource="../resources/master.qrc">
-    <normaloff>:/master/computer-slideshow.png</normaloff>:/master/computer-slideshow.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>0</number>
@@ -45,21 +41,12 @@
         <property name="text">
          <string>Previous</string>
         </property>
-        <property name="icon">
-         <iconset resource="../../core/resources/core.qrc">
-          <normaloff>:/core/go-previous.png</normaloff>:/core/go-previous.png</iconset>
-        </property>
        </widget>
       </item>
       <item>
        <widget class="QToolButton" name="startStopButton">
         <property name="toolTip">
          <string>Start/pause</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../core/resources/core.qrc">
-          <normaloff>:/core/media-playback-start.png</normaloff>
-          <normalon>:/core/media-playback-pause.png</normalon>:/core/media-playback-start.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>
@@ -73,10 +60,6 @@
        <widget class="QToolButton" name="showNextButton">
         <property name="toolTip">
          <string>Next</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../core/resources/core.qrc">
-          <normaloff>:/core/go-next.png</normaloff>:/core/go-next.png</iconset>
         </property>
        </widget>
       </item>
@@ -133,10 +116,6 @@
        <widget class="QToolButton" name="viewInSeparateWindowButton">
         <property name="toolTip">
          <string>View in separate window</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../../core/resources/core.qrc">
-          <normaloff>:/core/view-fullscreen.png</normaloff>:/core/view-fullscreen.png</iconset>
         </property>
         <property name="checkable">
          <bool>true</bool>

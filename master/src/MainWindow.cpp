@@ -54,6 +54,7 @@
 #include "PlatformUserFunctions.h"
 #include "SlideshowPanel.h"
 #include "SpotlightPanel.h"
+#include "TeacherActionIcons.h"
 #include "ToolButton.h"
 #include "VeyonConfiguration.h"
 #include "VeyonMaster.h"
@@ -75,31 +76,6 @@ const QStringList& moreMenuLayout()
 		QStringLiteral("UserLogin"), QStringLiteral("UserLogoff")
 	};
 	return layout;
-}
-
-
-
-// three horizontal dots drawn in the current text color; avoids bundling another icon asset
-QIcon moreActionsIcon( const QColor& color )
-{
-	QIcon icon;
-	for( const auto size : { 16, 20, 24, 32, 48, 64 } )
-	{
-		QPixmap pixmap( size, size );
-		pixmap.fill( Qt::transparent );
-		QPainter painter( &pixmap );
-		painter.setRenderHint( QPainter::Antialiasing );
-		painter.setPen( Qt::NoPen );
-		painter.setBrush( color );
-		const auto radius = size / 10.0;
-		for( const auto x : { 0.25, 0.5, 0.75 } )
-		{
-			painter.drawEllipse( QPointF( size * x, size / 2.0 ), radius, radius );
-		}
-		painter.end();
-		icon.addPixmap( pixmap );
-	}
-	return icon;
 }
 
 }
@@ -378,11 +354,10 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	// initialize computer placement controls
 	auto customComputerPositionsControlMenu = new QMenu(this);
-	const auto darkSuffix = VeyonCore::useDarkMode() ? QStringLiteral("-dark") : QString();
-	customComputerPositionsControlMenu->addAction(QIcon(QStringLiteral(":/core/document-open%1.png").arg(darkSuffix)),
+	customComputerPositionsControlMenu->addAction(TeacherActionIcons::forViewControl(TeacherActionIcons::ViewControl::LoadComputerPositions, customComputerPositionsControlMenu->palette()),
 													tr("Load computer positions"),
 													this, &MainWindow::loadComputerPositions);
-	customComputerPositionsControlMenu->addAction(QIcon(QStringLiteral(":/core/document-save%1.png").arg(darkSuffix)),
+	customComputerPositionsControlMenu->addAction(TeacherActionIcons::forViewControl(TeacherActionIcons::ViewControl::SaveComputerPositions, customComputerPositionsControlMenu->palette()),
 													tr("Save computer positions"),
 													this, &MainWindow::saveComputerPositions);
 	ui->useCustomComputerPositionsButton->setMenu(customComputerPositionsControlMenu);
@@ -403,15 +378,21 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 		btn->setIconSize(QSize(20, 20));
 	}
 
-	if (VeyonCore::useDarkMode())
-	{
-		ui->aboutButton->setIcon(QIcon(QStringLiteral(":/core/help-about-dark.png")));
-		ui->filterComputersWithLoggedOnUsersButton->setIcon(QIcon(QStringLiteral(":/core/user-group-new-dark.png")));
-		ui->autoAdjustComputerIconSizeButton->setIcon(QIcon(QStringLiteral(":/master/zoom-fit-best-dark.png")));
-		ui->alignComputersButton->setIcon(QIcon(QStringLiteral(":/master/align-grid-dark.png")));
-		ui->useCustomComputerPositionsButton->setIcon(QIcon(QStringLiteral(":/master/exchange-positions-zorder-dark.png")));
-		ui->filterPoweredOnComputersButton->setIcon(QIcon(QStringLiteral(":/master/powered-on-dark.png")));
-	}
+	// NextSpace icons: the view-strip toggles, grid controls and About use the Tabler family in each button's own
+	// palette; a checked button keeps the same glyph and the style's checked state remains the state cue
+	const auto setViewControlIcon = []( QToolButton* button, TeacherActionIcons::ViewControl control ) {
+		button->setIcon( TeacherActionIcons::forViewControl( control, button->palette() ) );
+	};
+	setViewControlIcon( ui->computerSelectPanelButton, TeacherActionIcons::ViewControl::ComputerSelectPanel );
+	setViewControlIcon( ui->screenshotManagementPanelButton, TeacherActionIcons::ViewControl::ScreenshotManagementPanel );
+	setViewControlIcon( ui->slideshowPanelButton, TeacherActionIcons::ViewControl::SlideshowPanel );
+	setViewControlIcon( ui->spotlightPanelButton, TeacherActionIcons::ViewControl::SpotlightPanel );
+	setViewControlIcon( ui->filterPoweredOnComputersButton, TeacherActionIcons::ViewControl::PoweredOnFilter );
+	setViewControlIcon( ui->filterComputersWithLoggedOnUsersButton, TeacherActionIcons::ViewControl::LoggedOnUsersFilter );
+	setViewControlIcon( ui->autoAdjustComputerIconSizeButton, TeacherActionIcons::ViewControl::AutoAdjustIconSize );
+	setViewControlIcon( ui->useCustomComputerPositionsButton, TeacherActionIcons::ViewControl::CustomComputerPositions );
+	setViewControlIcon( ui->alignComputersButton, TeacherActionIcons::ViewControl::AlignComputers );
+	setViewControlIcon( ui->aboutButton, TeacherActionIcons::ViewControl::About );
 
 	// create the main toolbar
 	ui->toolBar->layout()->setSpacing( 8 );
@@ -688,7 +669,7 @@ void MainWindow::addFeaturesToToolBar()
 			continue;
 		}
 
-		auto btn = new ToolButton( QIcon( feature.iconUrl() ),
+		auto btn = new ToolButton( TeacherActionIcons::forFeature( feature, ui->toolBar->palette() ),
 										  toolBarLabel( feature ),
 										  toolBarActiveLabel( feature ),
 										  feature.description(),
@@ -711,7 +692,7 @@ void MainWindow::addFeaturesToToolBar()
 		}
 	}
 
-	m_moreButton = new ToolButton( moreActionsIcon( palette().color( QPalette::WindowText ) ),
+	m_moreButton = new ToolButton( TeacherActionIcons::more( ui->toolBar->palette() ),
 								   tr("More"), {}, tr("More classroom actions") );
 	m_moreButton->setObjectName( QStringLiteral("MoreActionsButton") );
 	m_moreButton->addTo( ui->toolBar );
@@ -773,7 +754,7 @@ void MainWindow::reloadMoreMenu()
 		QAction* action = nullptr;
 		if( const auto subFeatures = m_master.subFeatures( feature.uid() ); subFeatures.isEmpty() )
 		{
-			action = menu->addAction( QIcon( feature.iconUrl() ), toolBarLabel( feature ), this, [=, this]() {
+			action = menu->addAction( TeacherActionIcons::forFeature( feature, menu->palette() ), toolBarLabel( feature ), this, [=, this]() {
 				m_master.runFeature( feature );
 				updateModeButtonGroup();
 			} );
@@ -783,7 +764,7 @@ void MainWindow::reloadMoreMenu()
 		}
 		else
 		{
-			auto subMenu = menu->addMenu( QIcon( feature.iconUrl() ), toolBarLabel( feature ) );
+			auto subMenu = menu->addMenu( TeacherActionIcons::forFeature( feature, menu->palette() ), toolBarLabel( feature ) );
 			subMenu->setObjectName( feature.name() );
 			subMenu->setToolTipsVisible( true );
 			subMenu->setAccessibleName( toolBarLabel( feature ) );
@@ -839,7 +820,7 @@ void MainWindow::addSubFeatureActions( QMenu* menu, const Feature& parentFeature
 
 	for( const auto& subFeature : subFeatures )
 	{
-		auto action = menu->addAction(QIcon(subFeature.iconUrl()), subFeature.displayName(),
+		auto action = menu->addAction(TeacherActionIcons::forFeature(subFeature, menu->palette()), subFeature.displayName(),
 							   #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
 									  subFeature.shortcut(),
 							   #endif

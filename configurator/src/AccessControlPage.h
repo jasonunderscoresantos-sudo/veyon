@@ -43,6 +43,9 @@ public:
 	void connectWidgetsToProperties() override;
 	void applyConfiguration() override;
 
+protected:
+	bool event( QEvent* event ) override;
+
 private Q_SLOTS:
 	void addAccessGroup();
 	void removeAccessGroup();
@@ -60,6 +63,11 @@ private Q_SLOTS:
 private:
 	void modifyAccessControlRules( const QJsonArray& accessControlRules, int selectedRow );
 	void updateAccessControlRules();
+	void updateCommandIcons();
+
+	// V3bd: set once the UI exists, so palette events during construction never touch it; declared first, so it is
+	// initialised before any member whose construction can send the page an event
+	bool m_commandIconsReady = false;
 
 	Ui::AccessControlPage *ui;
 

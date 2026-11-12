@@ -57,3 +57,26 @@ if(WITH_TESTS AND VEYON_BUILD_LINUX)
 	add_test(NAME VncProtocolRobustnessTest COMMAND VncProtocolRobustnessTest)
 
 endif()
+
+if(WITH_TESTS AND VEYON_BUILD_WINDOWS)
+
+	#
+	# TeacherActionIconsTest: NextSpace Teacher action-icon mapping and offscreen rendering
+	# (run with QT_QPA_PLATFORM=offscreen; V3AN_CONTACT_SHEET_DIR optionally receives the contact sheets)
+	#
+	add_executable(TeacherActionIconsTest
+		TeacherActionIconsTest.cpp
+	)
+
+	set_default_target_properties(TeacherActionIconsTest)
+
+	target_link_libraries(TeacherActionIconsTest PRIVATE
+		Qt${QT_MAJOR_VERSION}::Test
+		Qt${QT_MAJOR_VERSION}::Gui
+		veyon-core
+		nextspace-action-icons
+	)
+
+	add_test(NAME TeacherActionIconsTest COMMAND TeacherActionIconsTest)
+
+endif()

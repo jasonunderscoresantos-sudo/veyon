@@ -35,6 +35,7 @@
 #include "FileSystemBrowser.h"
 #include "Filesystem.h"
 #include "ProgressItemDelegate.h"
+#include "TeacherActionIcons.h"
 
 #include "ui_FileCollectDialog.h"
 
@@ -42,10 +43,16 @@ FileCollectDialog::FileCollectDialog(FileCollectController* controller, QWidget*
 	QDialog(parent),
 	ui(new Ui::FileCollectDialog),
 	m_controller(controller),
-	m_model(new FileCollectTreeModel(controller, this))
+	m_model(nullptr)
 {
 	ui->setupUi(this);
+	// V3ax: the model draws its transfer-state icons from the tree view's palette at 20 logical px, so it is
+	// created once setupUi() has created the view
+	m_model = new FileCollectTreeModel(controller, ui->collectionsTreeView->palette(), this);
+	ui->collectionsTreeView->setIconSize(QSize(20, 20));
 	ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Start"));
+	ui->browseDestinationDirectoryButton->setIcon(TeacherActionIcons::forSecondaryControl(TeacherActionIcons::SecondaryControl::CollectFilesOpenDestination, ui->browseDestinationDirectoryButton->palette()));
+	ui->browseDestinationDirectoryButton->setIconSize(QSize(20, 20));
 
 	ui->collectionsTreeView->setItemDelegateForColumn(int(FileCollectTreeModel::Column::Progress),
 													  new ProgressItemDelegate(ui->collectionsTreeView));
@@ -84,9 +91,9 @@ FileCollectDialog::FileCollectDialog(FileCollectController* controller, QWidget*
 	connect (m_controller, &FileCollectController::finished, this, [this]() {
 		ui->buttonBox->setStandardButtons(QDialogButtonBox::Open | QDialogButtonBox::Close);
 
-		const auto darkSuffix = VeyonCore::useDarkMode() ? QStringLiteral("-dark") : QString();
 		ui->buttonBox->button(QDialogButtonBox::Open)->setText(tr("Open output directory"));
-		ui->buttonBox->button(QDialogButtonBox::Open)->setIcon(QIcon(QStringLiteral(":/core/document-open%1.png").arg(darkSuffix)));
+		ui->buttonBox->button(QDialogButtonBox::Open)->setIcon(TeacherActionIcons::forSecondaryControl(TeacherActionIcons::SecondaryControl::CollectFilesOpenDestination, ui->buttonBox->button(QDialogButtonBox::Open)->palette()));
+		ui->buttonBox->button(QDialogButtonBox::Open)->setIconSize(QSize(20, 20));
 	});
 
 	const auto availableSize = screen()->availableSize();

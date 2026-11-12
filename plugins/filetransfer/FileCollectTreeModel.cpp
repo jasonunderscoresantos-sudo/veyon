@@ -28,15 +28,16 @@
 
 #include "FileCollectTreeModel.h"
 #include "FileCollectController.h"
+#include "TeacherActionIcons.h"
 
 
-FileCollectTreeModel::FileCollectTreeModel( FileCollectController* controller, QObject* parent ) :
+FileCollectTreeModel::FileCollectTreeModel( FileCollectController* controller, const QPalette& palette, QObject* parent ) :
 	QAbstractItemModel(parent),
 	m_controller(controller),
-	m_scheduledPixmap(QIcon(QStringLiteral(":/filetransfer/file-scheduled.png"))),
-	m_transferringPixmap(QIcon(QStringLiteral(":/filetransfer/file-transferring.png"))),
-	m_waitingPixmap(QIcon(QStringLiteral(":/filetransfer/file-waiting.png"))),
-	m_finishedPixmap(QIcon(QStringLiteral(":/filetransfer/file-finished.png")))
+	m_scheduledPixmap(TeacherActionIcons::forFileTransferState(TeacherActionIcons::FileTransferState::Scheduled, palette)),
+	m_transferringPixmap(TeacherActionIcons::forFileTransferState(TeacherActionIcons::FileTransferState::Transferring, palette)),
+	m_waitingPixmap(TeacherActionIcons::forFileTransferState(TeacherActionIcons::FileTransferState::Waiting, palette)),
+	m_finishedPixmap(TeacherActionIcons::forFileTransferState(TeacherActionIcons::FileTransferState::Finished, palette))
 {
 	connect(m_controller, &FileCollectController::collectionsAboutToChange,
 			this, &FileCollectTreeModel::beginResetModel);

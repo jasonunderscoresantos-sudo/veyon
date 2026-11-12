@@ -6,10 +6,6 @@
   <property name="windowTitle">
    <string>Send text message</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="textmessage.qrc">
-    <normaloff>:/textmessage/dialog-information.png</normaloff>:/textmessage/dialog-information.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label_3">

@@ -28,6 +28,7 @@
 #include "BuiltinDirectoryConfigurationPage.h"
 #include "Configuration/UiMapping.h"
 #include "NetworkObjectModel.h"
+#include "NextSpaceActionIcons.h"
 #include "ObjectManager.h"
 
 #include "ui_BuiltinDirectoryConfigurationPage.h"
@@ -38,6 +39,20 @@ BuiltinDirectoryConfigurationPage::BuiltinDirectoryConfigurationPage( BuiltinDir
 	m_configuration( configuration )
 {
 	ui->setupUi(this);
+
+	// V3bk: palette-aware Locations & computers command icons at 20 logical px; each icon-only button's accessible name
+	// is its existing translated .ui tooltip, so both cues stay identical; only then may palette events refresh the
+	// icons (see event())
+	updateCommandIcons();
+	ui->addLocationButton->setAccessibleName( ui->addLocationButton->toolTip() );
+	ui->removeLocationButton->setAccessibleName( ui->removeLocationButton->toolTip() );
+	ui->moveLocationUpButton->setAccessibleName( ui->moveLocationUpButton->toolTip() );
+	ui->moveLocationDownButton->setAccessibleName( ui->moveLocationDownButton->toolTip() );
+	ui->addComputerButton->setAccessibleName( ui->addComputerButton->toolTip() );
+	ui->removeComputerButton->setAccessibleName( ui->removeComputerButton->toolTip() );
+	ui->moveComputerUpButton->setAccessibleName( ui->moveComputerUpButton->toolTip() );
+	ui->moveComputerDownButton->setAccessibleName( ui->moveComputerDownButton->toolTip() );
+	m_commandIconsReady = true;
 
 	populateLocations();
 
@@ -365,4 +380,45 @@ NetworkObject BuiltinDirectoryConfigurationPage::currentComputerObject() const
 	}
 
 	return NetworkObject();
+}
+
+
+
+bool BuiltinDirectoryConfigurationPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the eight
+	// Locations & computers command icons, which then runs after Qt has resolved the child buttons' palettes (a
+	// PaletteChange reaches the page before its children are updated); the event is neither consumed nor changed, and
+	// the refresh never repopulates a table, changes a selection or an enabled state, reconnects a control or reads or
+	// writes the configuration
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void BuiltinDirectoryConfigurationPage::updateCommandIcons()
+{
+	// each Locations & computers button renders its own role in its own palette at 20 logical px; only the icon and its
+	// size change (the BuiltinDirectoryConfigurationPage.ui list-add, edit-delete, go-up and go-down icons stay as unused
+	// fallback bytes), and no text, tooltip, accessible name, enabled state, selection, table, connection, network
+	// object or configuration is touched
+	using NextSpaceActionIcons::AdministrationBuiltinDirectoryCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationBuiltinDirectoryCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationBuiltinDirectoryCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->addLocationButton, AdministrationBuiltinDirectoryCommand::AddLocation );
+	assign( ui->removeLocationButton, AdministrationBuiltinDirectoryCommand::RemoveLocation );
+	assign( ui->moveLocationUpButton, AdministrationBuiltinDirectoryCommand::MoveLocationUp );
+	assign( ui->moveLocationDownButton, AdministrationBuiltinDirectoryCommand::MoveLocationDown );
+	assign( ui->addComputerButton, AdministrationBuiltinDirectoryCommand::AddComputer );
+	assign( ui->removeComputerButton, AdministrationBuiltinDirectoryCommand::RemoveComputer );
+	assign( ui->moveComputerUpButton, AdministrationBuiltinDirectoryCommand::MoveComputerUp );
+	assign( ui->moveComputerDownButton, AdministrationBuiltinDirectoryCommand::MoveComputerDown );
 }

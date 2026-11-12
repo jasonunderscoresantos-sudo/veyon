@@ -28,6 +28,7 @@
 
 #include "Filesystem.h"
 #include "ScreenshotManagementPanel.h"
+#include "TeacherActionIcons.h"
 #include "VeyonConfiguration.h"
 #include "VeyonCore.h"
 #include "Screenshot.h"
@@ -40,6 +41,11 @@ ScreenshotManagementPanel::ScreenshotManagementPanel( QWidget *parent ) :
 	ui( new Ui::ScreenshotManagementPanel )
 {
 	ui->setupUi( this );
+
+	ui->showBtn->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::ShowScreenshot, ui->showBtn->palette() ) );
+	ui->showBtn->setIconSize( QSize( 20, 20 ) );
+	ui->deleteBtn->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::DeleteScreenshot, ui->deleteBtn->palette() ) );
+	ui->deleteBtn->setIconSize( QSize( 20, 20 ) );
 
 	VeyonCore::filesystem().ensurePathExists( VeyonCore::config().screenshotDirectory() );
 
@@ -61,11 +67,6 @@ ScreenshotManagementPanel::ScreenshotManagementPanel( QWidget *parent ) :
 
 	connect( ui->showBtn, &QPushButton::clicked, this, &ScreenshotManagementPanel::showScreenshot );
 	connect( ui->deleteBtn, &QPushButton::clicked, this, &ScreenshotManagementPanel::deleteScreenshot );
-
-	if (VeyonCore::useDarkMode())
-	{
-		ui->showBtn->setIcon(QIcon(QStringLiteral(":/core/edit-find-dark.png")));
-	}
 
 	updateModel();
 }

@@ -1,0 +1,58 @@
+NextSpace Classroom Management - third-party notices
+====================================================
+
+These notices are in addition to the GNU General Public License (COPYING, installed as LICENSE.TXT) and the
+upstream Veyon copyright notices, which remain unchanged and continue to apply.
+
+
+Tabler Icons
+------------
+
+Component: Tabler Icons, outline style
+Version:   tag v3.49.0, commit bbed884d15354b5cebf2493371f20dc2d5e83eaf
+Source:    https://github.com/tabler/tabler-icons/tree/bbed884d15354b5cebf2493371f20dc2d5e83eaf
+Licence:   MIT, reproduced below exactly as published at that tag
+Used for:  NextSpace Teacher Console action and control icons (toolbar, menus, computer-tile action menu, view strip, grid controls, Screenshots, Slideshow and Spotlight panels)
+
+Imported glyphs (38 files from icons/outline/ at the commit above):
+  align-box-center-middle, app-window, apps, camera, device-desktop, device-desktop-minus,
+  device-desktop-plus, device-floppy, devices-pc, dots, eye, file-download, file-upload,
+  folder-open, info-circle, lamp-2, layout-grid, lock, lock-open, login, logout, maximize, message,
+  pencil, player-pause, player-play, player-skip-back, player-skip-forward, pointer, power, refresh,
+  refresh-off, screen-share, slideshow, trash, users, world, zoom-scan
+
+Local modification. The imported source files are unmodified; the product draws path data generated from them.
+  Stroke width: the upstream stroke of 2.0 units on the 24-unit grid is drawn at 2.1 units, which is
+  1.75 logical pixels at the 20-logical-pixel action-icon size. Every glyph keeps its upstream geometry.
+Shared treatments (one upstream glyph reused for several actions; these are not distinct glyphs):
+  camera is shared by Screenshot and the Screenshots-panel toggle.
+  power is shared by Power On, Power Down and the powered-on filter.
+  eye is shared by Remote View and the Screenshots-panel Show button.
+  maximize is shared by the own-screen and selected-user fullscreen share modes and the Slideshow
+    separate-window toggle.
+  app-window is shared by the own-screen and selected-user window share modes.
+  refresh is shared by Reboot and the Spotlight-panel realtime toggle (its checked On state).
+
+Tabler Icons licence text:
+
+MIT License
+
+Copyright (c) 2020-2026 Paweł Kuna
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -44,6 +44,7 @@ public:
 
 protected:
 	void resizeEvent( QResizeEvent* event ) override;
+	bool eventFilter( QObject* watched, QEvent* event ) override;
 
 private Q_SLOTS:
 	void configurationChanged();
@@ -61,6 +62,8 @@ private:
 	void switchToAdvancedView();
 
 	void loadConfigurationPagePlugins();
+	void updatePageIcons();
+	void updateCommandIcons();
 
 	void closeEvent( QCloseEvent *closeEvent ) override;
 

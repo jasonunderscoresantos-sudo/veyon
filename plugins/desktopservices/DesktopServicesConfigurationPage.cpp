@@ -24,6 +24,7 @@
 
 #include "DesktopServicesConfiguration.h"
 #include "DesktopServicesConfigurationPage.h"
+#include "NextSpaceActionIcons.h"
 #include "ObjectManager.h"
 #include "Configuration/UiMapping.h"
 
@@ -35,6 +36,16 @@ DesktopServicesConfigurationPage::DesktopServicesConfigurationPage( DesktopServi
 	m_configuration( configuration )
 {
 	ui->setupUi( this );
+
+	// V3bl: palette-aware Applications & websites command icons at 20 logical px; each icon-only button's accessible
+	// name is its existing translated .ui tooltip, so both cues stay identical; only then may palette events refresh
+	// the icons (see event())
+	updateCommandIcons();
+	ui->addApplicationButton->setAccessibleName( ui->addApplicationButton->toolTip() );
+	ui->removeApplicationButton->setAccessibleName( ui->removeApplicationButton->toolTip() );
+	ui->addWebsiteButton->setAccessibleName( ui->addWebsiteButton->toolTip() );
+	ui->removeWebsiteButton->setAccessibleName( ui->removeWebsiteButton->toolTip() );
+	m_commandIconsReady = true;
 }
 
 
@@ -216,4 +227,41 @@ void DesktopServicesConfigurationPage::loadObjects( const QJsonArray& objects, Q
 	}
 
 	tableWidget->setUpdatesEnabled( true );
+}
+
+
+
+bool DesktopServicesConfigurationPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the four
+	// Applications & websites command icons, which then runs after Qt has resolved the child buttons' palettes (a
+	// PaletteChange reaches the page before its children are updated); the event is neither consumed nor changed, and
+	// the refresh never reloads a table, changes a selection, reconnects a control, creates, updates or removes a
+	// service object or reads or writes the configuration
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void DesktopServicesConfigurationPage::updateCommandIcons()
+{
+	// each Applications & websites button renders its own role in its own palette at 20 logical px; only the icon and
+	// its size change (the DesktopServicesConfigurationPage.ui list-add and edit-delete icons stay as unused fallback
+	// bytes), and no text, tooltip, accessible name, enabled state, selection, table, connection, service object or
+	// configuration is touched
+	using NextSpaceActionIcons::AdministrationDesktopServicesCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationDesktopServicesCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationDesktopServicesCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->addApplicationButton, AdministrationDesktopServicesCommand::AddApplication );
+	assign( ui->removeApplicationButton, AdministrationDesktopServicesCommand::RemoveApplication );
+	assign( ui->addWebsiteButton, AdministrationDesktopServicesCommand::AddWebsite );
+	assign( ui->removeWebsiteButton, AdministrationDesktopServicesCommand::RemoveWebsite );
 }

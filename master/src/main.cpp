@@ -56,7 +56,7 @@ static void applyNextSpacePalette( QApplication& app )
 	const auto subtleSurface = token( "#EAF0F5", "#1C2E43" );
 	const auto primaryText = token( "#10243A", "#F1F5F9" );
 	const auto secondaryText = token( "#526477", "#B2C0CF" );
-	const auto border = token( "#CBD5E1", "#46586D" );
+	const auto border = token( "#7F91A5", "#5A7188" );
 	const auto accent = token( "#087F8C", "#39C6C5" );
 	const auto selection = token( "#E3F5F5", "#183D47" );
 	const auto selectedText = token( "#10243A", "#F1F5F9" );

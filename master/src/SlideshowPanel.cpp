@@ -26,6 +26,7 @@
 #include "ComputerMonitoringWidget.h"
 #include "SlideshowModel.h"
 #include "SlideshowPanel.h"
+#include "TeacherActionIcons.h"
 #include "UserConfig.h"
 
 #include "ui_SlideshowPanel.h"
@@ -39,6 +40,15 @@ SlideshowPanel::SlideshowPanel( UserConfig& config, ComputerMonitoringWidget* co
 {
 	ui->setupUi( this );
 
+	ui->showPreviousButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::PreviousSlide, ui->showPreviousButton->palette() ) );
+	ui->showPreviousButton->setIconSize( QSize( 20, 20 ) );
+	ui->showNextButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::NextSlide, ui->showNextButton->palette() ) );
+	ui->showNextButton->setIconSize( QSize( 20, 20 ) );
+	ui->startStopButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::SlideshowStartPause, ui->startStopButton->palette() ) );
+	ui->startStopButton->setIconSize( QSize( 20, 20 ) );
+	ui->viewInSeparateWindowButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::SlideshowSeparateWindow, ui->viewInSeparateWindowButton->palette() ) );
+	ui->viewInSeparateWindowButton->setIconSize( QSize( 20, 20 ) );
+
 	ui->monitoringWidget->setAutoAdjustIconSize( false );
 	ui->monitoringWidget->setUseCustomComputerPositions( false );
 	ui->monitoringWidget->setAcceptDrops( false );
@@ -46,17 +56,6 @@ SlideshowPanel::SlideshowPanel( UserConfig& config, ComputerMonitoringWidget* co
 	ui->monitoringWidget->setIgnoreWheelEvent( true );
 	ui->monitoringWidget->setSelectionMode( QListView::SingleSelection );
 	ui->monitoringWidget->setModel( m_model );
-
-	if (VeyonCore::useDarkMode())
-	{
-		QIcon startStopIcon;
-		startStopIcon.addPixmap(QPixmap(QStringLiteral(":/core/media-playback-pause-dark.png")), QIcon::Mode::Normal, QIcon::State::On);
-		startStopIcon.addPixmap(QPixmap(QStringLiteral(":/core/media-playback-start-dark.png")), QIcon::Mode::Normal, QIcon::State::Off);
-		ui->startStopButton->setIcon(startStopIcon);
-		ui->showPreviousButton->setIcon(QIcon(QStringLiteral(":/core/go-previous-dark.png")));
-		ui->showNextButton->setIcon(QIcon(QStringLiteral(":/core/go-next-dark.png")));
-		ui->viewInSeparateWindowButton->setIcon(QIcon(QStringLiteral(":/core/view-fullscreen-dark.png")));
-	}
 
 	connect( ui->startStopButton, &QAbstractButton::toggled, this, &SlideshowPanel::updateDuration );
 	connect( ui->durationSlider, &QSlider::valueChanged, this, &SlideshowPanel::updateDuration );

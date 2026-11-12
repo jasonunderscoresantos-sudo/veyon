@@ -39,6 +39,9 @@ public:
 	void connectWidgetsToProperties() override;
 	void applyConfiguration() override;
 
+protected:
+	bool event( QEvent* event ) override;
+
 private:
 	void testAuthentication();
 	bool testLogonAuthentication();
@@ -48,11 +51,16 @@ private:
 	void clearLogFiles();
 
 	void populateNetworkObjectDirectories();
+	void updateCommandIcons();
 
 	static QString authenticationTestTitle()
 	{
 		return tr( "Authentication test");
 	}
+
+	// V3be: set once the UI exists, so palette events during construction never touch it; declared before the UI
+	// pointer, so it is initialised before any member whose construction can send the page an event
+	bool m_commandIconsReady = false;
 
 	Ui::GeneralConfigurationPage* ui;
 

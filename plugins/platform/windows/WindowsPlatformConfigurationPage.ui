@@ -9,6 +9,9 @@
    <iconset resource="windows.qrc">
     <normaloff>:/windows/windows-logo.png</normaloff>:/windows/windows-logo.png</iconset>
   </property>
+  <property name="nextspaceActionIconRole" stdset="0">
+   <string notr="true">Windows</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="topMargin">
     <number>0</number>

@@ -14,3 +14,6 @@ build_veyon_plugin(authkeys
 	AuthKeysTableModel.h
 	AuthKeysManager.h
 	)
+
+# NextSpace action icons for the two Authentication Keys directory buttons (V3AM-099, V3bj)
+target_link_libraries(authkeys PRIVATE nextspace-action-icons)

@@ -29,6 +29,7 @@
 #include "ComputerMonitoringWidget.h"
 #include "SpotlightModel.h"
 #include "SpotlightPanel.h"
+#include "TeacherActionIcons.h"
 #include "UserConfig.h"
 
 #include "ui_SpotlightPanel.h"
@@ -43,22 +44,19 @@ SpotlightPanel::SpotlightPanel( UserConfig& config, ComputerMonitoringWidget* co
 {
 	ui->setupUi( this );
 
+	ui->addButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::SpotlightAdd, ui->addButton->palette() ) );
+	ui->addButton->setIconSize( QSize( 20, 20 ) );
+	ui->removeButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::SpotlightRemove, ui->removeButton->palette() ) );
+	ui->removeButton->setIconSize( QSize( 20, 20 ) );
+	ui->realtimeViewButton->setIcon( TeacherActionIcons::forSecondaryControl( TeacherActionIcons::SecondaryControl::SpotlightRealtime, ui->realtimeViewButton->palette() ) );
+	ui->realtimeViewButton->setIconSize( QSize( 20, 20 ) );
+
 	ui->monitoringWidget->setAutoAdjustIconSize( false );
 	ui->monitoringWidget->setUseCustomComputerPositions( false );
 	ui->monitoringWidget->setAcceptDrops( false );
 	ui->monitoringWidget->setDragEnabled( false );
 	ui->monitoringWidget->setIgnoreWheelEvent( true );
 	ui->monitoringWidget->setModel( m_model );
-
-	if (VeyonCore::useDarkMode())
-	{
-		QIcon realtimeViewIcon;
-		realtimeViewIcon.addPixmap(QPixmap(QStringLiteral(":/master/update-realtime-enabled-dark.png")), QIcon::Mode::Normal, QIcon::State::On);
-		realtimeViewIcon.addPixmap(QPixmap(QStringLiteral(":/master/update-realtime-disabled-dark.png")), QIcon::Mode::Normal, QIcon::State::Off);
-		ui->realtimeViewButton->setIcon(realtimeViewIcon);
-		ui->addButton->setIcon(QIcon(QStringLiteral(":/core/go-up-dark.png")));
-		ui->removeButton->setIcon(QIcon(QStringLiteral(":/core/go-down-dark.png")));
-	}
 
 	connect( ui->addButton, &QAbstractButton::clicked, this, &SpotlightPanel::add );
 	connect( ui->removeButton, &QAbstractButton::clicked, this, &SpotlightPanel::remove );

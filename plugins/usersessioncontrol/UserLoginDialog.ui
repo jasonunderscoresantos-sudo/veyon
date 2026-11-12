@@ -5,10 +5,6 @@
   <property name="windowTitle">
    <string>User login</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="usersessioncontrol.qrc">
-    <normaloff>:/usersessioncontrol/login-user.png</normaloff>:/usersessioncontrol/login-user.png</iconset>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label">

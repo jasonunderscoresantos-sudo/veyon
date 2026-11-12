@@ -27,6 +27,7 @@
 #include <QProcess>
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QHash>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QScrollBar>
@@ -41,9 +42,37 @@
 #include "ConfigurationManager.h"
 #include "VeyonConfiguration.h"
 #include "MainWindow.h"
+#include "NextSpaceActionIcons.h"
 #include "PluginManager.h"
 
 #include "ui_MainWindow.h"
+
+
+
+namespace {
+
+// V3bb: the approved Administration page roles by the exact, case-sensitive and non-translated value of a page root's
+// nextspaceActionIconRole property; any other value, or none, leaves the page's selector icon unchanged
+const QHash<QString, NextSpaceActionIcons::AdministrationPage>& administrationPageRoles()
+{
+	using NextSpaceActionIcons::AdministrationPage;
+	static const QHash<QString, AdministrationPage> roles{
+		{ QStringLiteral("General"), AdministrationPage::General },
+		{ QStringLiteral("StudentAgent"), AdministrationPage::StudentAgent },
+		{ QStringLiteral("TeacherConsole"), AdministrationPage::TeacherConsole },
+		{ QStringLiteral("AccessControl"), AdministrationPage::AccessControl },
+		{ QStringLiteral("AuthenticationKeys"), AdministrationPage::AuthenticationKeys },
+		{ QStringLiteral("LocationsAndComputers"), AdministrationPage::LocationsAndComputers },
+		{ QStringLiteral("Broadcast"), AdministrationPage::Broadcast },
+		{ QStringLiteral("ApplicationsAndWebsites"), AdministrationPage::ApplicationsAndWebsites },
+		{ QStringLiteral("FileTransfer"), AdministrationPage::FileTransfer },
+		{ QStringLiteral("Windows"), AdministrationPage::Windows },
+		{ QStringLiteral("LdapDirectory"), AdministrationPage::LdapDirectory },
+	};
+	return roles;
+}
+
+}
 
 
 MainWindow::MainWindow( QWidget* parent ) :
@@ -56,6 +85,15 @@ MainWindow::MainWindow( QWidget* parent ) :
 	setWindowTitle(tr("NextSpace Classroom Administration - Development build based on Veyon %1").arg(VeyonCore::versionString()));
 
 	loadConfigurationPagePlugins();
+
+	// V3bb: palette-aware Administration page identities, refreshed when the selector's palette changes
+	updatePageIcons();
+	ui->pageSelector->installEventFilter( this );
+
+	// V3bc: palette-aware Administration menu-command icons, refreshed when the owning menu's palette changes
+	updateCommandIcons();
+	ui->menu_File->installEventFilter( this );
+	ui->menu_Help->installEventFilter( this );
 
 	// reset all widget's values to current configuration
 	reset( true );
@@ -166,6 +204,30 @@ void MainWindow::resizeEvent( QResizeEvent* event )
 	QMainWindow::resizeEvent( event );
 
 	updateSizes();
+}
+
+
+
+
+bool MainWindow::eventFilter( QObject* watched, QEvent* event )
+{
+	// only the mapped page icons follow a palette change; the current row, labels, order, flags, visibility and every
+	// other icon stay as they are
+	if( watched == ui->pageSelector &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		updatePageIcons();
+	}
+
+	// V3bc: only the four mapped menu-command icons follow a palette change of their owning menu; every action label,
+	// mnemonic, shortcut, tooltip, state and connection and the menu order stay as they are
+	if( ( watched == ui->menu_File || watched == ui->menu_Help ) &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		updateCommandIcons();
+	}
+
+	return QMainWindow::eventFilter( watched, event );
 }
 
 
@@ -364,6 +426,44 @@ void MainWindow::loadConfigurationPagePlugins()
 	// adjust minimum size
 	ui->pageSelector->setMinimumSize( ui->pageSelector->sizeHintForColumn(0) + 3 * ui->pageSelector->spacing(),
 									  ui->pageSelector->minimumHeight() );
+}
+
+
+
+void MainWindow::updatePageIcons()
+{
+	// selector row i shows stacked page i (the built-in pages of MainWindow.ui, then the plugin pages in load order);
+	// only a page with an approved nextspaceActionIconRole gets the shared palette-aware icon, every other row keeps its
+	// current icon (the built-in fallback art or the plugin page's windowIcon())
+	const auto palette = ui->pageSelector->palette();
+	for( int i = 0; i < ui->pageSelector->count() && i < ui->configPages->count(); ++i )
+	{
+		const auto role = ui->configPages->widget( i )->property( "nextspaceActionIconRole" );
+		if( role.typeId() != QMetaType::QString )
+		{
+			continue;
+		}
+		const auto it = administrationPageRoles().constFind( role.toString() );
+		if( it != administrationPageRoles().constEnd() )
+		{
+			ui->pageSelector->item( i )->setIcon( NextSpaceActionIcons::forAdministrationPage( *it, palette ) );
+		}
+	}
+}
+
+
+
+void MainWindow::updateCommandIcons()
+{
+	// the File-menu commands render from the File menu's palette and About from the Help menu's palette; only these four
+	// icons are replaced (the MainWindow.ui icons stay as unused fallback bytes), and no action text, shortcut, state or
+	// connection is touched
+	using NextSpaceActionIcons::AdministrationCommand;
+	const auto filePalette = ui->menu_File->palette();
+	ui->actionSaveSettings->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::SaveSettings, filePalette ) );
+	ui->actionLoadSettings->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::LoadSettings, filePalette ) );
+	ui->actionResetConfiguration->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::ResetConfiguration, filePalette ) );
+	ui->actionAboutVeyon->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::About, ui->menu_Help->palette() ) );
 }
 
 

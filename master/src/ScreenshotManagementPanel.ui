@@ -100,20 +100,12 @@
        <property name="text">
         <string>Show</string>
        </property>
-       <property name="icon">
-        <iconset resource="../../core/resources/core.qrc">
-         <normaloff>:/core/edit-find.png</normaloff>:/core/edit-find.png</iconset>
-       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="deleteBtn">
        <property name="text">
         <string>Delete</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../core/resources/core.qrc">
-         <normaloff>:/core/edit-delete.png</normaloff>:/core/edit-delete.png</iconset>
        </property>
       </widget>
      </item>

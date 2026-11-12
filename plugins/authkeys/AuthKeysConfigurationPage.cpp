@@ -32,6 +32,7 @@
 #include "UserGroupsBackendManager.h"
 #include "VeyonConfiguration.h"
 #include "Configuration/UiMapping.h"
+#include "NextSpaceActionIcons.h"
 
 #include "ui_AuthKeysConfigurationPage.h"
 
@@ -43,6 +44,15 @@ AuthKeysConfigurationPage::AuthKeysConfigurationPage() :
 	m_keyFilesFilter( tr( "Key files (*.pem)" ) )
 {
 	ui->setupUi(this);
+
+	// V3bj: palette-aware Authentication Keys directory command icons at 20 logical px and textual names for the two
+	// icon-only key directory buttons; only then may palette events refresh the icons (see event())
+	updateCommandIcons();
+	ui->openPublicKeyBaseDir->setToolTip( tr( "Open public key directory" ) );
+	ui->openPublicKeyBaseDir->setAccessibleName( tr( "Open public key directory" ) );
+	ui->openPrivateKeyBaseDir->setToolTip( tr( "Open private key directory" ) );
+	ui->openPrivateKeyBaseDir->setAccessibleName( tr( "Open private key directory" ) );
+	m_commandIconsReady = true;
 
 	Configuration::UiMapping::setFlags( ui->keyFileDirectories, Configuration::Property::Flag::Advanced );
 
@@ -287,4 +297,37 @@ void AuthKeysConfigurationPage::showResultMessage( bool success, const QString& 
 	{
 		QMessageBox::critical( this, title, message );
 	}
+}
+
+
+
+bool AuthKeysConfigurationPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the two
+	// directory command icons, which then runs after Qt has resolved the child buttons' palettes (a PaletteChange
+	// reaches the page before its children are updated); the event is neither consumed nor changed, and the refresh
+	// never reloads the key table, reconnects a control or reads or writes the configuration
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void AuthKeysConfigurationPage::updateCommandIcons()
+{
+	// each directory button renders its own role in its own palette at 20 logical px; only the icon and its size change
+	// (the AuthKeysConfigurationPage.ui document-open icons stay as unused fallback bytes), and no text, tooltip, tab
+	// stop, state, connection, browser mode, destination field, key or configuration is touched
+	using NextSpaceActionIcons::AdministrationAuthenticationKeysCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationAuthenticationKeysCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationAuthenticationKeysCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->openPublicKeyBaseDir, AdministrationAuthenticationKeysCommand::OpenPublicKeyDirectory );
+	assign( ui->openPrivateKeyBaseDir, AdministrationAuthenticationKeysCommand::OpenPrivateKeyDirectory );
 }

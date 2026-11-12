@@ -37,9 +37,13 @@ FileTransferDialog::FileTransferDialog( FileTransferController* controller, QWid
 	QDialog( parent ),
 	ui( new Ui::FileTransferDialog ),
 	m_controller( controller ),
-	m_listModel( new FileTransferListModel( m_controller, this ) )
+	m_listModel( nullptr )
 {
 	ui->setupUi( this );
+	// V3ax: the model draws its transfer-state icons from the list view's palette at 20 logical px, so it is
+	// created once setupUi() has created the view
+	m_listModel = new FileTransferListModel( m_controller, ui->fileListView->palette(), this );
+	ui->fileListView->setIconSize( QSize( 20, 20 ) );
 	ui->buttonBox->button( QDialogButtonBox::Ok )->setText( tr( "Start" ) );
 
 	ui->fileListView->setModel( m_listModel );

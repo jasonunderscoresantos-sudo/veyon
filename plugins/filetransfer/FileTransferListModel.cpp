@@ -24,14 +24,15 @@
 
 #include "FileTransferListModel.h"
 #include "FileTransferController.h"
+#include "TeacherActionIcons.h"
 
 
-FileTransferListModel::FileTransferListModel( FileTransferController* controller, QObject* parent ) :
+FileTransferListModel::FileTransferListModel( FileTransferController* controller, const QPalette& palette, QObject* parent ) :
 	QStringListModel( parent ),
 	m_controller( controller ),
-	m_scheduledPixmap( QIcon( QStringLiteral( ":/filetransfer/file-scheduled.png" ) ) ),
-	m_transferringPixmap( QIcon( QStringLiteral( ":/filetransfer/file-transferring.png" ) ) ),
-	m_finishedPixmap( QIcon( QStringLiteral( ":/filetransfer/file-finished.png" ) ) )
+	m_scheduledPixmap( TeacherActionIcons::forFileTransferState( TeacherActionIcons::FileTransferState::Scheduled, palette ) ),
+	m_transferringPixmap( TeacherActionIcons::forFileTransferState( TeacherActionIcons::FileTransferState::Transferring, palette ) ),
+	m_finishedPixmap( TeacherActionIcons::forFileTransferState( TeacherActionIcons::FileTransferState::Finished, palette ) )
 {
 	setStringList( m_controller->files() );
 

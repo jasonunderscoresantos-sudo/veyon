@@ -1,6 +1,8 @@
 include(BuildVeyonApplication)
 
 file(GLOB master_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.*)
+# TeacherActionIcons.cpp is compiled once, by nextspace-action-icons (common/nextspaceactionicons)
+list(REMOVE_ITEM master_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/TeacherActionIcons.cpp)
 
 set(master_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources/master.qrc)
 if(VEYON_DEBUG)
@@ -15,6 +17,9 @@ build_veyon_application(veyon-master
 	SOURCES
 	${master_SOURCES}
 	${master_RESOURCES})
+
+# NextSpace action icons: the shared non-installed static helper (common/nextspaceactionicons)
+target_link_libraries(veyon-master PRIVATE nextspace-action-icons)
 
 if(VEYON_BUILD_LINUX)
 	xdg_install(${CMAKE_CURRENT_BINARY_DIR}/data/veyon-master.desktop ${CMAKE_CURRENT_SOURCE_DIR}/data/veyon-master.xpm ${CMAKE_CURRENT_SOURCE_DIR}/data/veyon-master.png ${CMAKE_CURRENT_SOURCE_DIR}/data/veyon-master.svg)

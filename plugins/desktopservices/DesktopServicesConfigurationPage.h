@@ -45,6 +45,9 @@ public:
 	void connectWidgetsToProperties() override;
 	void applyConfiguration() override;
 
+protected:
+	bool event( QEvent* event ) override;
+
 private Q_SLOTS:
 	void addApplication();
 	void updateApplication();
@@ -61,6 +64,12 @@ private:
 	static DesktopServiceObject currentServiceObject( QTableWidget* tableWidget, DesktopServiceObject::Type type );
 
 	static void loadObjects( const QJsonArray& objects, QTableWidget* tableWidget );
+
+	void updateCommandIcons();
+
+	// V3bl: set once the UI exists, so palette events during construction never touch it; declared before the UI
+	// pointer, so it is initialised before the UI is created
+	bool m_commandIconsReady = false;
 
 	Ui::DesktopServicesConfigurationPage *ui;
 

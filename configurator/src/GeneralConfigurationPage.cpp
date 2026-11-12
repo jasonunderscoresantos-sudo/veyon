@@ -38,6 +38,7 @@
 #include "VeyonCore.h"
 #include "VeyonConfiguration.h"
 #include "UserGroupsBackendManager.h"
+#include "NextSpaceActionIcons.h"
 
 #include "ui_GeneralConfigurationPage.h"
 
@@ -47,6 +48,13 @@ GeneralConfigurationPage::GeneralConfigurationPage() :
 	ui(new Ui::GeneralConfigurationPage)
 {
 	ui->setupUi(this);
+
+	// V3be: palette-aware General page command icons at 20 logical px and a textual name for the icon-only log file
+	// directory button; only then may palette events refresh the icons (see event())
+	updateCommandIcons();
+	ui->openLogFileDirectory->setToolTip( tr( "Open log file directory" ) );
+	ui->openLogFileDirectory->setAccessibleName( tr( "Open log file directory" ) );
+	m_commandIconsReady = true;
 
 	// retrieve list of builtin translations and populate language combobox
 	QStringList languages;
@@ -267,4 +275,37 @@ void GeneralConfigurationPage::populateNetworkObjectDirectories()
 	{
 		ui->networkObjectDirectoryPlugin->addItem( it.value(), it.key() );
 	}
+}
+
+
+
+bool GeneralConfigurationPage::event( QEvent* event )
+{
+	// the base class handles the event first; once the UI exists, a palette change queues a refresh of only the three
+	// command icons, which then runs after Qt has resolved the child buttons' palettes (a PaletteChange reaches the page
+	// before its children are updated); the event is neither consumed nor changed
+	const auto result = ConfigurationPage::event( event );
+	if( m_commandIconsReady &&
+		( event->type() == QEvent::PaletteChange || event->type() == QEvent::ApplicationPaletteChange ) )
+	{
+		QMetaObject::invokeMethod( this, [this]() { updateCommandIcons(); }, Qt::QueuedConnection );
+	}
+	return result;
+}
+
+
+
+void GeneralConfigurationPage::updateCommandIcons()
+{
+	// each command button renders its role in its own palette at 20 logical px; only the icon and its size change (the
+	// GeneralConfigurationPage.ui icons stay as unused fallback bytes), and no text, tooltip, tab stop, state or
+	// connection is touched
+	using NextSpaceActionIcons::AdministrationGeneralCommand;
+	const auto assign = []( QAbstractButton* button, AdministrationGeneralCommand command ) {
+		button->setIcon( NextSpaceActionIcons::forAdministrationGeneralCommand( command, button->palette() ) );
+		button->setIconSize( QSize( 20, 20 ) );
+	};
+	assign( ui->testAuthenticationButton, AdministrationGeneralCommand::TestAuthentication );
+	assign( ui->openLogFileDirectory, AdministrationGeneralCommand::OpenLogDirectory );
+	assign( ui->clearLogFiles, AdministrationGeneralCommand::ClearLogFiles );
 }

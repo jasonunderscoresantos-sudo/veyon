@@ -28,12 +28,13 @@
 #include <QStringListModel>
 
 class FileTransferController;
+class QPalette;
 
 class FileTransferListModel : public QStringListModel
 {
 	Q_OBJECT
 public:
-	FileTransferListModel( FileTransferController* controller, QObject* parent );
+	FileTransferListModel( FileTransferController* controller, const QPalette& palette, QObject* parent );
 	~FileTransferListModel() override = default;
 
 	QVariant data( const QModelIndex& index, int role = Qt::DisplayRole ) const override;

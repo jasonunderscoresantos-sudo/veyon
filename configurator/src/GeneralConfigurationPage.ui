@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>GeneralConfigurationPage</class>
  <widget class="QWidget" name="GeneralConfigurationPage">
+  <property name="nextspaceActionIconRole" stdset="0">
+   <string notr="true">General</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_14">
    <property name="topMargin">
     <number>0</number>

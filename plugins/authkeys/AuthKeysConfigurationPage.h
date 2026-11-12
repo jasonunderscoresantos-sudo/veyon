@@ -43,6 +43,9 @@ public:
 	void connectWidgetsToProperties() override;
 	void applyConfiguration() override;
 
+protected:
+	bool event( QEvent* event ) override;
+
 private Q_SLOTS:
 	void openPublicKeyBaseDir();
 	void openPrivateKeyBaseDir();
@@ -56,6 +59,11 @@ private Q_SLOTS:
 private:
 	QString selectedKey() const;
 	void showResultMessage( bool success, const QString& title, const QString& message );
+	void updateCommandIcons();
+
+	// V3bj: set once the UI exists, so palette events during construction never touch it; declared before the UI
+	// pointer, so it is initialised before any member whose construction can send the page an event
+	bool m_commandIconsReady = false;
 
 	Ui::AuthKeysConfigurationPage *ui;
 	AuthKeysTableModel m_authKeyTableModel;
