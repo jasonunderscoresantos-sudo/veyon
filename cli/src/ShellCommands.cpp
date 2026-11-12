@@ -60,7 +60,7 @@ CommandLinePluginInterface::RunResult ShellCommands::handle_main()
 
 	while( true )
 	{
-		printf("VEYON> ");
+		printf("NEXTSPACE> ");
 
 		QString line;
 		if( stream.readLineInto( &line ) && line != QLatin1String("exit") )
