@@ -61,6 +61,27 @@ endif()
 if(WITH_TESTS AND VEYON_BUILD_WINDOWS)
 
 	#
+	# WindowsFirewallRuleManagerTest: pure fake-store tests for exact ownership,
+	# pair transactions, rollback and durable topology snapshots. No COM or host
+	# firewall access is linked into this target.
+	#
+	add_executable(WindowsFirewallRuleManagerTest
+		WindowsFirewallRuleManagerTest.cpp
+		${CMAKE_SOURCE_DIR}/plugins/platform/windows/WindowsFirewallRuleManager.cpp
+	)
+
+	target_include_directories(WindowsFirewallRuleManagerTest PRIVATE
+		${CMAKE_SOURCE_DIR}/plugins/platform/windows
+	)
+
+	target_link_libraries(WindowsFirewallRuleManagerTest PRIVATE
+		Qt${QT_MAJOR_VERSION}::Test
+		Qt${QT_MAJOR_VERSION}::Core
+	)
+
+	add_test(NAME WindowsFirewallRuleManagerTest COMMAND WindowsFirewallRuleManagerTest)
+
+	#
 	# TeacherActionIconsTest: NextSpace Teacher action-icon mapping and offscreen rendering
 	# (run with QT_QPA_PLATFORM=offscreen; V3AN_CONTACT_SHEET_DIR optionally receives the contact sheets)
 	#
