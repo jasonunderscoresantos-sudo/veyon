@@ -53,6 +53,7 @@ private Q_SLOTS:
 	void saveSettingsToFile();
 	void resetConfiguration();
 	void aboutVeyon();
+	void showOfflineHelp();
 
 private:
 	void updateSizes();

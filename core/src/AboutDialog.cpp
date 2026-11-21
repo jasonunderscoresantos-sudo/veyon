@@ -22,7 +22,6 @@
  *
  */
 
-#include <QDesktopServices>
 #include <QFile>
 #include <QGuiApplication>
 #include <QIcon>
@@ -34,14 +33,14 @@
 
 #include "ui_AboutDialog.h"
 
+#include <veyonconfig.h>
+
 
 AboutDialog::AboutDialog( QWidget *parent ) :
 	QDialog( parent ),
 	ui( new Ui::AboutDialog )
 {
 	ui->setupUi( this );
-
-	setWindowTitle(tr("About Veyon %1").arg(VeyonCore::versionString()));
 
 	ui->versionLabel->setText( VeyonCore::versionString() );
 
@@ -88,14 +87,13 @@ AboutDialog::AboutDialog( QWidget *parent ) :
 		ui->label_2->setText( QStringLiteral("NextSpace Teacher Console") );
 		ui->label_3->setText( QStringLiteral("NextSpace Classroom Management — EduLearn Technologies Inc") );
 		ui->label_3->setWordWrap( true );
-		ui->versionLabel->setText( tr("Development build based on Veyon %1").arg(VeyonCore::versionString()) );
+		ui->versionLabel->setText( QStringLiteral(NEXTSPACE_DISPLAY_VERSION) );
 		ui->versionLabel->setWordWrap( true );
 		ui->label_4->setText( QStringLiteral(
 			"<a href=\"https://edulearntechnologies.com\">edulearntechnologies.com</a><br>"
 			"<a href=\"mailto:support@edulearntechnologies.com\">support@edulearntechnologies.com</a>") );
 		ui->label_4->setWordWrap( true );
 		ui->label_9->setText( tr("Website / support:") );
-		ui->donateButton->hide();
 		ui->label_5->setText( tr("For NextSpace translation support, contact support@edulearntechnologies.com. "
 			"Upstream contributors and license information are retained in their respective tabs.") );
 	}
@@ -111,14 +109,13 @@ AboutDialog::AboutDialog( QWidget *parent ) :
 		ui->label_2->setText( QStringLiteral("NextSpace Classroom Administration") );
 		ui->label_3->setText( QStringLiteral("NextSpace Classroom Management — EduLearn Technologies Inc") );
 		ui->label_3->setWordWrap( true );
-		ui->versionLabel->setText( tr("Development build based on Veyon %1").arg(VeyonCore::versionString()) );
+		ui->versionLabel->setText( QStringLiteral(NEXTSPACE_DISPLAY_VERSION) );
 		ui->versionLabel->setWordWrap( true );
 		ui->label_4->setText( QStringLiteral(
 			"<a href=\"https://edulearntechnologies.com\">edulearntechnologies.com</a><br>"
 			"<a href=\"mailto:support@edulearntechnologies.com\">support@edulearntechnologies.com</a>") );
 		ui->label_4->setWordWrap( true );
 		ui->label_9->setText( tr("Website / support:") );
-		ui->donateButton->hide();
 		ui->label_5->setText( tr("For NextSpace translation support, contact support@edulearntechnologies.com. "
 			"Upstream contributors and license information are retained in their respective tabs.") );
 	}
@@ -149,11 +146,4 @@ AboutDialog::AboutDialog( QWidget *parent ) :
 AboutDialog::~AboutDialog()
 {
 	delete ui;
-}
-
-
-
-void AboutDialog::openDonationWebsite()
-{
-	  QDesktopServices::openUrl( QUrl( QStringLiteral( "https://www.paypal.com/cgi-bin/webscr?item_name=Donation+to+Veyon+-+OpenSource+classroom+management&cmd=_donations&business=donate%40veyon.io" ) ) );
 }

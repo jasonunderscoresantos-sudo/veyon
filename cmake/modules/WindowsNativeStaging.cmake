@@ -6,14 +6,15 @@
 #              roots. Nothing is resolved through PATH, and no shell tool is used.
 # usage: cmake -DSOURCE_DIR=... -DBINARY_DIR=... -DSTAGE_NAME=... -DWINDOWS_ARCH=win64|win32
 #              -DDDENGINE_DLL=... -DINTERCEPTION_DIR=... -DTOOLCHAIN_BIN_DIR=... -DQT_PLUGIN_DIR=...
-#              -DOBJDUMP=... -DSTRIP=... -DWITH_TRANSLATIONS=ON|OFF -P WindowsNativeStaging.cmake
+#              -DOBJDUMP=... -DSTRIP=... -DWITH_TRANSLATIONS=ON|OFF -DWITH_WEBAPI=ON|OFF
+#              -P WindowsNativeStaging.cmake
 
 cmake_minimum_required(VERSION 3.21)
 
 # tools are run by absolute path only; an empty PATH rules out any ambient lookup
 set(ENV{PATH} "")
 
-foreach(var SOURCE_DIR BINARY_DIR STAGE_NAME WINDOWS_ARCH DDENGINE_DLL INTERCEPTION_DIR TOOLCHAIN_BIN_DIR QT_PLUGIN_DIR OBJDUMP STRIP)
+foreach(var SOURCE_DIR BINARY_DIR STAGE_NAME WINDOWS_ARCH DDENGINE_DLL INTERCEPTION_DIR TOOLCHAIN_BIN_DIR QT_PLUGIN_DIR OBJDUMP STRIP WITH_WEBAPI)
 	if("${${var}}" STREQUAL "")
 		message(FATAL_ERROR "WindowsNativeStaging: ${var} is not set")
 	endif()
@@ -58,7 +59,7 @@ file(REMOVE_RECURSE "${STAGE}")
 file(MAKE_DIRECTORY "${STAGE}/plugins")
 
 set(REPORT "# WindowsNativeStaging report for ${STAGE_NAME}\n")
-foreach(var SOURCE_DIR BINARY_DIR TOOLCHAIN_BIN_DIR QT_PLUGIN_DIR INTERCEPTION_DIR DDENGINE_DLL OBJDUMP STRIP SYSTEM_DIR PE_FORMAT WITH_TRANSLATIONS)
+foreach(var SOURCE_DIR BINARY_DIR TOOLCHAIN_BIN_DIR QT_PLUGIN_DIR INTERCEPTION_DIR DDENGINE_DLL OBJDUMP STRIP SYSTEM_DIR PE_FORMAT WITH_TRANSLATIONS WITH_WEBAPI)
 	string(APPEND REPORT "# ${var}: ${${var}}\n")
 endforeach()
 string(APPEND REPORT "# PATH during staging: cleared; tools run by absolute path\n")
@@ -145,6 +146,60 @@ get_filename_component(ddengine_name "${DDENGINE_DLL}" NAME)
 stage_file("${DDENGINE_DLL}" "${ddengine_name}")
 stage_file("${INTERCEPTION_DIR}/interception.dll" "interception.dll")
 
+# NextSpace controlled Interception payload (GC3-S3): exactly the three canonical files from 3rdparty/interception/
+set(CANONICAL_INTERCEPTION_DIR "${SOURCE_DIR}/3rdparty/interception")
+set(CANONICAL_HELPER_SHA256 "98B4B384BC2C84A9E9F9275352B265DD1B351C4780598D7D1AA7D32B06F5BA86")
+set(CANONICAL_INSTALL_BAT_SHA256 "77048165377633E8CB5FDBD62C313493BD19E4CDCB0F9CF5BDAEDB88D7BCD105")
+set(CANONICAL_UNINSTALL_BAT_SHA256 "3CA834971CE2364F53FEF24582C368BD14ECC5F4D8B620FFB04332C2BFC11FA8")
+
+file(GLOB actual_interception_files LIST_DIRECTORIES false "${CANONICAL_INTERCEPTION_DIR}/*")
+set(actual_interception_names "")
+foreach(actual_interception_file IN LISTS actual_interception_files)
+	get_filename_component(actual_interception_name "${actual_interception_file}" NAME)
+	list(APPEND actual_interception_names "${actual_interception_name}")
+endforeach()
+list(SORT actual_interception_names)
+set(expected_interception_names "install-interception.exe;install.bat;uninstall.bat")
+if(NOT actual_interception_names STREQUAL expected_interception_names)
+	message(FATAL_ERROR
+		"WindowsNativeStaging: 3rdparty/interception must contain exactly "
+		"${expected_interception_names}; found ${actual_interception_names}"
+	)
+endif()
+
+file(REAL_PATH "${CANONICAL_INTERCEPTION_DIR}" canonical_interception_real_dir)
+
+function(stage_canonical_interception filename expected_size expected_hash)
+	set(file_path "${CANONICAL_INTERCEPTION_DIR}/${filename}")
+	if(NOT EXISTS "${file_path}")
+		message(FATAL_ERROR "WindowsNativeStaging: missing canonical payload '${file_path}'")
+	endif()
+	if(IS_SYMLINK "${file_path}")
+		message(FATAL_ERROR "WindowsNativeStaging: symlink rejected for canonical payload '${file_path}'")
+	endif()
+	file(REAL_PATH "${file_path}" file_real_path)
+	string(FIND "${file_real_path}" "${canonical_interception_real_dir}/" file_prefix)
+	if(NOT file_prefix EQUAL 0)
+		message(FATAL_ERROR "WindowsNativeStaging: canonical payload escaped its source directory: '${file_real_path}'")
+	endif()
+	file(SIZE "${file_path}" actual_size)
+	if(NOT actual_size EQUAL expected_size)
+		message(FATAL_ERROR "WindowsNativeStaging: size mismatch for '${filename}': expected ${expected_size}, got ${actual_size}")
+	endif()
+	file(SHA256 "${file_path}" actual_hash)
+	string(TOUPPER "${actual_hash}" actual_hash)
+	if(NOT actual_hash STREQUAL expected_hash)
+		message(FATAL_ERROR "WindowsNativeStaging: SHA-256 mismatch for '${filename}': expected ${expected_hash}, got ${actual_hash}")
+	endif()
+	stage_file("${file_path}" "interception/${filename}")
+	set(REPORT "${REPORT}interception\tinterception/${filename}\t${actual_hash}\n" PARENT_SCOPE)
+endfunction()
+
+stage_canonical_interception("install-interception.exe" 470528 "${CANONICAL_HELPER_SHA256}")
+stage_canonical_interception("install.bat" 150 "${CANONICAL_INSTALL_BAT_SHA256}")
+stage_canonical_interception("uninstall.bat" 53 "${CANONICAL_UNINSTALL_BAT_SHA256}")
+stage_file("${BINARY_DIR}/nextspace-interception-payload.tsv" "nextspace-interception-payload.tsv")
+
 # Qt dynamic plugins and the QCA OpenSSL provider, as listed in veyon.nsi
 foreach(plugin "platforms/qwindows.dll" "imageformats/qjpeg.dll" "tls/qopensslbackend.dll" "crypto/libqca-ossl.dll")
 	stage_file("${QT_PLUGIN_DIR}/${plugin}" "${plugin}")
@@ -163,6 +218,9 @@ stage_file("${SOURCE_DIR}/COPYING" "COPYING")
 stage_crlf("${SOURCE_DIR}/COPYING" "LICENSE.TXT")
 stage_crlf("${SOURCE_DIR}/nsis/README-nextspace.txt" "README.TXT")
 stage_file("${SOURCE_DIR}/THIRD-PARTY-NOTICES.txt" "THIRD-PARTY-NOTICES.txt")
+# NextSpace offline help (GC3-S2): exactly the two bundled files, copied unchanged into help/
+stage_file("${SOURCE_DIR}/doc/nextspace-help/index.html" "help/index.html")
+stage_file("${SOURCE_DIR}/doc/nextspace-help/quick-reference.txt" "help/quick-reference.txt")
 file(COPY "${SOURCE_DIR}/nsis" DESTINATION "${STAGE}")
 string(APPEND REPORT "seed\tnsis/\t${SOURCE_DIR}/nsis\n")
 stage_file("${BINARY_DIR}/nsis/veyon.nsi" "veyon.nsi")
@@ -190,6 +248,14 @@ set(unresolved "")
 list(LENGTH queue pending_count)
 while(pending_count GREATER 0)
 	list(POP_FRONT queue rel)
+	# The vendor's command-line driver helper is intentionally a 32-bit PE and
+	# is not a NextSpace runtime binary. Keep it hash-manifested, but outside
+	# the x64 runtime dependency closure just like the cross-build recipe does.
+	if(rel MATCHES "^interception/")
+		string(APPEND REPORT "helper\t${rel}\texcluded-from-${PE_FORMAT}-runtime-closure\n")
+		list(LENGTH queue pending_count)
+		continue()
+	endif()
 	execute_process(COMMAND "${OBJDUMP}" -p "${STAGE}/${rel}"
 		OUTPUT_VARIABLE dump ERROR_VARIABLE dump_error RESULT_VARIABLE result)
 	if(NOT result EQUAL 0)
@@ -234,6 +300,29 @@ if(unresolved)
 	file(WRITE "${STAGE}-staging-report.tsv" "${REPORT}")
 	list(JOIN unresolved "\n  " unresolved_text)
 	message(FATAL_ERROR "WindowsNativeStaging: unresolved non-system imports:\n  ${unresolved_text}")
+endif()
+
+# with WITH_WEBAPI=OFF neither the WebAPI plugin nor its HTTP server runtime may enter the stage
+# (for example from a stale plugin left in a reused build tree)
+if(WITH_WEBAPI)
+	string(APPEND REPORT "# webapi: permitted (WITH_WEBAPI=${WITH_WEBAPI})\n")
+else()
+	file(GLOB_RECURSE staged_payload LIST_DIRECTORIES false RELATIVE "${STAGE}" "${STAGE}/*")
+	list(SORT staged_payload)
+	set(webapi_payload "")
+	foreach(rel IN LISTS staged_payload)
+		get_filename_component(name "${rel}" NAME)
+		string(TOLOWER "${name}" lname)
+		if(lname MATCHES "webapi" OR lname MATCHES "httpserver")
+			list(APPEND webapi_payload "${rel}")
+		endif()
+	endforeach()
+	if(webapi_payload)
+		file(WRITE "${STAGE}-staging-report.tsv" "${REPORT}")
+		list(JOIN webapi_payload "\n  " webapi_text)
+		message(FATAL_ERROR "WindowsNativeStaging: WebAPI payload staged although WITH_WEBAPI=${WITH_WEBAPI}:\n  ${webapi_text}")
+	endif()
+	string(APPEND REPORT "# webapi: not staged (WITH_WEBAPI=${WITH_WEBAPI})\n")
 endif()
 
 # strip only project-built binaries; redistributed binaries stay byte-identical to their sources.

@@ -1,5 +1,75 @@
 set(WINDOWS_INSTALL_FILES "veyon-${VEYON_WINDOWS_ARCH}-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_BUILD}")
 
+set(NEXTSPACE_INTERCEPTION_PAYLOAD_DIR "${CMAKE_SOURCE_DIR}/3rdparty/interception")
+set(NEXTSPACE_INTERCEPTION_HELPER_SHA256 "98B4B384BC2C84A9E9F9275352B265DD1B351C4780598D7D1AA7D32B06F5BA86")
+set(NEXTSPACE_INTERCEPTION_INSTALL_BAT_SHA256 "77048165377633E8CB5FDBD62C313493BD19E4CDCB0F9CF5BDAEDB88D7BCD105")
+set(NEXTSPACE_INTERCEPTION_UNINSTALL_BAT_SHA256 "3CA834971CE2364F53FEF24582C368BD14ECC5F4D8B620FFB04332C2BFC11FA8")
+
+file(GLOB NEXTSPACE_INTERCEPTION_PAYLOAD_MEMBERS
+	LIST_DIRECTORIES false
+	RELATIVE "${NEXTSPACE_INTERCEPTION_PAYLOAD_DIR}"
+	"${NEXTSPACE_INTERCEPTION_PAYLOAD_DIR}/*"
+)
+list(SORT NEXTSPACE_INTERCEPTION_PAYLOAD_MEMBERS)
+set(NEXTSPACE_INTERCEPTION_EXPECTED_MEMBERS
+	"install-interception.exe;install.bat;uninstall.bat"
+)
+if(NOT NEXTSPACE_INTERCEPTION_PAYLOAD_MEMBERS STREQUAL NEXTSPACE_INTERCEPTION_EXPECTED_MEMBERS)
+	message(FATAL_ERROR
+		"GC3-S3: canonical Interception directory must contain exactly "
+		"${NEXTSPACE_INTERCEPTION_EXPECTED_MEMBERS}; found ${NEXTSPACE_INTERCEPTION_PAYLOAD_MEMBERS}"
+	)
+endif()
+
+file(REAL_PATH "${NEXTSPACE_INTERCEPTION_PAYLOAD_DIR}" NEXTSPACE_INTERCEPTION_PAYLOAD_REAL_DIR)
+function(nextspace_verify_interception_payload filename expected_size expected_hash)
+	set(payload "${NEXTSPACE_INTERCEPTION_PAYLOAD_DIR}/${filename}")
+	if(NOT EXISTS "${payload}" OR IS_DIRECTORY "${payload}")
+		message(FATAL_ERROR "GC3-S3: missing canonical Interception payload ${payload}")
+	endif()
+	if(IS_SYMLINK "${payload}")
+		message(FATAL_ERROR "GC3-S3: canonical Interception payload may not be a symlink: ${payload}")
+	endif()
+	file(REAL_PATH "${payload}" payload_real)
+	string(FIND "${payload_real}" "${NEXTSPACE_INTERCEPTION_PAYLOAD_REAL_DIR}/" payload_prefix)
+	if(NOT payload_prefix EQUAL 0)
+		message(FATAL_ERROR "GC3-S3: canonical Interception payload escaped its source directory: ${payload_real}")
+	endif()
+	file(SIZE "${payload}" payload_size)
+	if(NOT payload_size EQUAL expected_size)
+		message(FATAL_ERROR
+			"GC3-S3: ${filename} size mismatch: expected ${expected_size}, got ${payload_size}"
+		)
+	endif()
+	file(SHA256 "${payload}" payload_hash)
+	string(TOUPPER "${payload_hash}" payload_hash)
+	if(NOT payload_hash STREQUAL expected_hash)
+		message(FATAL_ERROR
+			"GC3-S3: ${filename} SHA-256 mismatch: expected ${expected_hash}, got ${payload_hash}"
+		)
+	endif()
+endfunction()
+
+nextspace_verify_interception_payload(
+	"install-interception.exe" 470528 "${NEXTSPACE_INTERCEPTION_HELPER_SHA256}"
+)
+nextspace_verify_interception_payload(
+	"install.bat" 150 "${NEXTSPACE_INTERCEPTION_INSTALL_BAT_SHA256}"
+)
+nextspace_verify_interception_payload(
+	"uninstall.bat" 53 "${NEXTSPACE_INTERCEPTION_UNINSTALL_BAT_SHA256}"
+)
+
+set(NEXTSPACE_INTERCEPTION_PAYLOAD_MANIFEST
+	"${CMAKE_BINARY_DIR}/nextspace-interception-payload.tsv"
+)
+file(WRITE "${NEXTSPACE_INTERCEPTION_PAYLOAD_MANIFEST}"
+	"# NextSpace Interception canonical payload v1.0.0\n"
+	"install-interception.exe\t470528\t${NEXTSPACE_INTERCEPTION_HELPER_SHA256}\n"
+	"install.bat\t150\t${NEXTSPACE_INTERCEPTION_INSTALL_BAT_SHA256}\n"
+	"uninstall.bat\t53\t${NEXTSPACE_INTERCEPTION_UNINSTALL_BAT_SHA256}\n"
+)
+
 if(CMAKE_HOST_WIN32 AND NOT CMAKE_CROSSCOMPILING)
 	# NextSpace native Windows (MSYS2 UCRT64) build: stage through an auditable script-mode helper using the
 	# CMake-resolved toolchain, Qt and SDK paths; the Linux cross-prefix recipe below stays the cross branch
@@ -25,6 +95,7 @@ if(CMAKE_HOST_WIN32 AND NOT CMAKE_CROSSCOMPILING)
 			-DOBJDUMP=${CMAKE_OBJDUMP}
 			-DSTRIP=${CMAKE_STRIP}
 			-DWITH_TRANSLATIONS=${WITH_TRANSLATIONS}
+			-DWITH_WEBAPI=${WITH_WEBAPI}
 			-P ${CMAKE_CURRENT_LIST_DIR}/WindowsNativeStaging.cmake
 		VERBATIM
 	)
@@ -45,7 +116,8 @@ add_custom_target(windows-binaries
 	COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --config $<CONFIGURATION>
 	COMMAND rm -rf ${WINDOWS_INSTALL_FILES}*
 	COMMAND mkdir -p ${WINDOWS_INSTALL_FILES}/interception
-	COMMAND cp ${CMAKE_SOURCE_DIR}/3rdparty/interception/* ${WINDOWS_INSTALL_FILES}/interception
+	COMMAND cp ${CMAKE_SOURCE_DIR}/3rdparty/interception/install-interception.exe ${CMAKE_SOURCE_DIR}/3rdparty/interception/install.bat ${CMAKE_SOURCE_DIR}/3rdparty/interception/uninstall.bat ${WINDOWS_INSTALL_FILES}/interception
+	COMMAND cp ${NEXTSPACE_INTERCEPTION_PAYLOAD_MANIFEST} ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${CMAKE_SOURCE_DIR}/3rdparty/ddengine/${DLL_DDENGINE} ${WINDOWS_INSTALL_FILES}
 	COMMAND cp core/veyon-core.dll ${WINDOWS_INSTALL_FILES}
 	COMMAND find . -mindepth 2 -name 'veyon-*.exe' -exec cp '{}' ${WINDOWS_INSTALL_FILES}/ '\;'
@@ -94,6 +166,8 @@ add_custom_target(windows-binaries
 	COMMAND cp ${CMAKE_SOURCE_DIR}/COPYING ${WINDOWS_INSTALL_FILES}/LICENSE.TXT
 	COMMAND cp ${CMAKE_SOURCE_DIR}/nsis/README-nextspace.txt ${WINDOWS_INSTALL_FILES}/README.TXT
 	COMMAND cp ${CMAKE_SOURCE_DIR}/THIRD-PARTY-NOTICES.txt ${WINDOWS_INSTALL_FILES}
+	COMMAND mkdir -p ${WINDOWS_INSTALL_FILES}/help
+	COMMAND cp ${CMAKE_SOURCE_DIR}/doc/nextspace-help/index.html ${CMAKE_SOURCE_DIR}/doc/nextspace-help/quick-reference.txt ${WINDOWS_INSTALL_FILES}/help
 	COMMAND todos ${WINDOWS_INSTALL_FILES}/*.TXT
 	COMMAND cp -ra ${CMAKE_SOURCE_DIR}/nsis ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${CMAKE_BINARY_DIR}/nsis/veyon.nsi ${WINDOWS_INSTALL_FILES}
@@ -103,7 +177,7 @@ endif()
 
 add_custom_target(create-windows-installer
 	COMMAND makensis ${WINDOWS_INSTALL_FILES}/veyon.nsi
-	COMMAND mv ${WINDOWS_INSTALL_FILES}/veyon-*setup.exe .
+	COMMAND mv ${WINDOWS_INSTALL_FILES}/${NEXTSPACE_INSTALLER_FILE} .
 	COMMAND rm -rf ${WINDOWS_INSTALL_FILES}
 	DEPENDS windows-binaries
 )

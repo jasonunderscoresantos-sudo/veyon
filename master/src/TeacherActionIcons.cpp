@@ -210,6 +210,7 @@ Glyph viewControlGlyph( ViewControl control )
 	case ViewControl::LoadComputerPositions: return Glyph::FolderOpen;
 	case ViewControl::SaveComputerPositions: return Glyph::DeviceFloppy;
 	case ViewControl::About: return Glyph::InfoCircle;
+	case ViewControl::Help: return Glyph::InfoCircle;
 	}
 	Q_UNREACHABLE();
 	return Glyph::InfoCircle;
@@ -316,7 +317,7 @@ using AdministrationCommand = TeacherActionIcons::AdministrationCommand;
 
 // V3bc map by Administration menu command, separate from the Teacher view and secondary controls; no default case, so
 // an unmapped command is a compiler warning. Each command has one stable glyph, drawn for both Off and On; all four reuse
-// reviewed glyphs (device-floppy, folder-open, info-circle and trash)
+// reviewed glyphs (device-floppy, folder-open, info-circle and trash), and the GC3-S2 OfflineHelp role reuses info-circle
 Glyph administrationCommandGlyph( AdministrationCommand command )
 {
 	switch( command )
@@ -325,6 +326,7 @@ Glyph administrationCommandGlyph( AdministrationCommand command )
 	case AdministrationCommand::LoadSettings: return Glyph::FolderOpen;
 	case AdministrationCommand::About: return Glyph::InfoCircle;
 	case AdministrationCommand::ResetConfiguration: return Glyph::Trash;
+	case AdministrationCommand::OfflineHelp: return Glyph::InfoCircle;
 	}
 	Q_UNREACHABLE();
 	return Glyph::InfoCircle;

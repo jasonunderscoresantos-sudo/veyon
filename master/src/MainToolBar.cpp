@@ -58,12 +58,37 @@ bool MainToolBar::event(QEvent* event)
 		return true;
 	}
 
-	if (event->type() == QEvent::Resize)
+	const auto result = QToolBar::event(event);
+	if (event->type() == QEvent::Resize || event->type() == QEvent::LayoutRequest)
 	{
-		updateMinimumSize();
+		if (m_embeddedWorkspaceMode)
+		{
+			updateEmbeddedMinimumHeight();
+		}
+		else
+		{
+			updateMinimumSize();
+		}
 	}
 
-	return QToolBar::event(event);
+	return result;
+}
+
+
+
+void MainToolBar::setEmbeddedWorkspaceMode()
+{
+	if (m_embeddedWorkspaceMode)
+	{
+		return;
+	}
+
+	m_embeddedWorkspaceMode = true;
+	setOrientation( Qt::Horizontal );
+	setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum );
+	setMinimumHeight( 0 );
+	setExpanded();
+	updateGeometry();
 }
 
 
@@ -97,6 +122,32 @@ void MainToolBar::updateMinimumSize()
 		{
 			setMinimumSize(newSize.width(), 0);
 		}
+	}
+}
+
+
+
+void MainToolBar::updateEmbeddedMinimumHeight()
+{
+	int requiredHeight = 0;
+	for( auto* action : actions() )
+	{
+		const auto* widget = widgetForAction( action );
+		if( widget && widget->isHidden() == false )
+		{
+			requiredHeight = qMax( requiredHeight, widget->geometry().bottom() + 1 );
+		}
+	}
+
+	if( m_layout )
+	{
+		requiredHeight += m_layout->contentsMargins().bottom();
+	}
+
+	if( requiredHeight > 0 && minimumHeight() != requiredHeight )
+	{
+		setMinimumHeight( requiredHeight );
+		updateGeometry();
 	}
 }
 

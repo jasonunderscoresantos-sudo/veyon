@@ -12,7 +12,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>About Veyon</string>
+   <string/>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/core.qrc">
@@ -65,9 +65,6 @@
        <property name="text">
         <string/>
        </property>
-       <property name="pixmap">
-        <pixmap resource="../resources/core.qrc">:/core/icon64.png</pixmap>
-       </property>
       </widget>
      </item>
      <item>
@@ -80,7 +77,7 @@
         </font>
        </property>
        <property name="text">
-        <string>About Veyon</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -118,7 +115,7 @@
        <item row="0" column="0" colspan="2">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string notr="true">Veyon - Virtual Eye On Networks</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -139,7 +136,7 @@
        <item row="5" column="1">
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string notr="true">&lt;a href=&quot;https://veyon.io&quot;&gt;https://veyon.io&lt;/a&gt;</string>
+          <string/>
          </property>
          <property name="openExternalLinks">
           <bool>true</bool>
@@ -172,13 +169,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item row="6" column="0" colspan="2">
-        <widget class="QPushButton" name="donateButton">
-         <property name="text">
-          <string>Support Veyon project with a donation</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -245,9 +235,7 @@
        <item>
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Current language not translated yet (or native English).
-
-If you're interested in translating Veyon into your local or another language or want to improve an existing translation, please contact a Veyon developer!</string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -317,24 +305,5 @@ If you're interested in translating Veyon into your local or another language or
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>donateButton</sender>
-   <signal>clicked()</signal>
-   <receiver>AboutDialog</receiver>
-   <slot>openDonationWebsite()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>376</x>
-     <y>368</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>368</x>
-     <y>249</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
- <slots>
-  <slot>openDonationWebsite()</slot>
- </slots>
 </ui>

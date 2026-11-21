@@ -79,6 +79,28 @@
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
       </widget>
+      <widget class="QToolButton" name="helpButton">
+       <property name="geometry">
+        <rect>
+         <x>1190</x>
+         <y>570</y>
+         <width>61</width>
+         <height>37</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Open offline help</string>
+       </property>
+       <property name="accessibleName">
+        <string>Open offline help</string>
+       </property>
+       <property name="text">
+        <string>Help</string>
+       </property>
+       <property name="shortcut">
+        <string notr="true">F1</string>
+       </property>
+      </widget>
       <widget class="QToolButton" name="aboutButton">
        <property name="geometry">
         <rect>

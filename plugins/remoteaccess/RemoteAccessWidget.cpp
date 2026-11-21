@@ -23,7 +23,6 @@
 
 #include <QActionGroup>
 #include <QBitmap>
-#include <QGuiApplication>
 #include <QLayout>
 #include <QMenu>
 #include <QPainter>
@@ -337,16 +336,6 @@ RemoteAccessWidget::RemoteAccessWidget( const ComputerControlInterface::Pointer&
 	updateRemoteAccessTitle();
 	connect( m_computerControlInterface.data(), &ComputerControlInterface::userChanged, this, &RemoteAccessWidget::updateRemoteAccessTitle );
 
-	// NextSpace: the Teacher Console uses its application icon. Other components that open this
-	// window (CLI, Student Agent worker) do not bundle that icon and keep the existing one.
-	if( VeyonCore::component() == VeyonCore::Component::Master )
-	{
-		setWindowIcon( QGuiApplication::windowIcon() );
-	}
-	else
-	{
-		setWindowIcon( QPixmap( QStringLiteral(":/remoteaccess/kmag.png") ) );
-	}
 	setAttribute( Qt::WA_DeleteOnClose, true );
 
 	m_vncView->move( 0, 0 );
