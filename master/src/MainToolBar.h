@@ -33,6 +33,7 @@ class MainToolBar : public QToolBar
 public:
 	explicit MainToolBar( QWidget* parent );
 	~MainToolBar() override = default;
+	void setEmbeddedWorkspaceMode();
 
 protected:
 	bool event(QEvent* event) override;
@@ -40,6 +41,7 @@ protected:
 private:
 	void setExpanded();
 	void updateMinimumSize();
+	void updateEmbeddedMinimumHeight();
 	void toggleToolTips();
 	void toggleIconMode();
 
@@ -47,5 +49,6 @@ private:
 
 	MainWindow* m_mainWindow;
 	QLayout* m_layout;
+	bool m_embeddedWorkspaceMode = false;
 
 } ;

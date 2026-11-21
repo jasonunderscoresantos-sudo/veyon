@@ -1,0 +1,209 @@
+NextSpace Classroom Management - Offline Quick Reference
+Version 1.0.0 - based on Veyon 4.11.4
+EduLearn Technologies Inc
+
+This quick reference is installed with NextSpace Classroom Management and works
+without Internet access. It describes only what this version can do. Press F1 in
+NextSpace Teacher Console or NextSpace Classroom Administration to open it.
+
+Contents
+  1. Using NextSpace Teacher Console
+  2. Stopping and reversing actions
+  3. NextSpace Student Agent and network troubleshooting
+  4. NextSpace Classroom Administration basics
+  5. Security boundaries
+  6. Support, version and licence
+
+
+==============================================================================
+1. Using NextSpace Teacher Console
+==============================================================================
+
+Starting
+- Open "NextSpace Teacher Console" from the Start menu or the desktop shortcut.
+- Depending on the configured authentication method, you may be asked for your
+  Windows user name and password.
+- The console shows the computers listed in the locations that Classroom
+  Administration has configured. It does not add computers by itself.
+
+Displaying and filtering computers
+- "Locations & computers" opens the list of locations. Tick the locations and
+  computers you want to see in the grid.
+- "Search users and computers" filters the grid by computer or user name.
+- "Only show powered on computers" and "Only show computers with logged on
+  users" hide the other computers.
+- The thumbnail size slider and "Auto" change the size of the computer tiles.
+- "Use custom computer arrangement" lets you place tiles freely. Press and hold
+  it to load an arrangement from a file or save the current one to a file.
+  "Align computers to grid" tidies the custom arrangement.
+- F5 reloads the computer list. F11 switches full screen on or off.
+
+Selecting computers and choosing targets
+- Click a tile to select it. Use Ctrl+click or Shift+click to select several.
+- Toolbar and More-menu actions apply to every computer currently shown in the
+  grid, after your location choice and filters.
+- To act on particular computers only, select them and right-click. The
+  right-click menu applies to the selected computers, or to every shown
+  computer when none is selected.
+- Remote Control and Remote View open one window for each selected computer.
+  With no computer selected, you are asked for a computer name or IP address.
+- Sharing a student's screen in Broadcast needs exactly one selected computer.
+
+Classroom actions
+- Monitor: the normal mode with live screen thumbnails.
+- Broadcast: shares your screen, or one selected student's screen, with the
+  other computers, in full screen or in a window. Choose the mode from the
+  Broadcast menu.
+- Lock: locks the screens and input of the computers.
+- Remote Control: controls one student computer with your mouse and keyboard.
+- Remote View: watches one student computer without controlling it.
+- Message: shows a text message on the student screens.
+- Send Files: copies files you choose to the student computers.
+- Collect Files: copies files from the student computers to your computer.
+- Screenshot: saves a screenshot of each computer.
+- Screenshots panel: shows and deletes saved screenshots.
+- Slideshow panel: shows the computer screens one after another.
+- Spotlight panel: shows chosen computers enlarged. Use Add and Remove to
+  choose them.
+- Start Application and Open Website: start a program or open a website on
+  the student computers. Predefined entries come from Classroom
+  Administration.
+- Power On: wakes computers with Wake-on-LAN. This needs the computer's MAC
+  address in its location and Wake-on-LAN support, which usually requires a
+  wired connection.
+- Reboot and Power Down: restart or shut down the computers. Power Down offers
+  options such as power down now, install updates and power down, power down
+  after user confirmation, and power down after a timeout.
+- Log In and Log Off: sign a user in to, or out of, the student computers.
+- The More menu holds the actions that are not on the toolbar.
+
+
+==============================================================================
+2. Stopping and reversing actions
+==============================================================================
+
+- Broadcast: click "Stop Broadcast", or click Monitor.
+- Lock: click "Unlock", or click Monitor.
+- Remote Control and Remote View: close the window or click Exit in its
+  toolbar. "View only" switches between watching and controlling.
+- Spotlight: remove the computers from the Spotlight panel, or close the
+  panel.
+- Slideshow: pause it with its start/pause button, or close the panel.
+- The Teacher Console cannot be closed while Broadcast or Lock is active.
+  Stop the action first.
+- If a computer stays locked or keeps showing a broadcast after the Teacher
+  Console has closed, start the Teacher Console again, select that computer
+  and stop the action from the right-click menu. Restarting that computer
+  also ends it.
+- Messages, sent or collected files, started programs, opened websites,
+  Log Off, Reboot and Power Down cannot be undone from the Teacher Console.
+  Check the shown computers before you start them.
+- Reboot and Power Down ask for confirmation only when "Show confirmation
+  dialog for potentially unsafe actions" is enabled on the Teacher Console page
+  of Classroom Administration.
+
+
+==============================================================================
+3. NextSpace Student Agent and network troubleshooting
+==============================================================================
+
+NextSpace Student Agent
+- The Student Agent is a Windows service on every student computer. It starts
+  automatically with Windows by default. If the advanced Autostart setting on
+  the Student Agent page of Classroom Administration is turned off, the
+  service is switched to manual start instead.
+- Its state (Running or Stopped) and the Start service and Stop service
+  buttons are on the Student Agent page of Classroom Administration.
+
+Wired, Wi-Fi and offline classroom networks
+- NextSpace works over the local classroom network, wired or Wi-Fi. It does
+  not need the Internet.
+- Wi-Fi is usually slower than a wired network. Expect slower thumbnails,
+  Broadcast and file transfers on Wi-Fi.
+- Wi-Fi networks that isolate devices from each other (for example guest
+  networks) block the Teacher Console from reaching student computers.
+
+If a computer cannot be reached
+1. Check that the computer is powered on and connected to the classroom
+   network.
+2. Check that its location entry in Classroom Administration has the right
+   computer name or IP address.
+3. Check on that computer that the NextSpace Student Agent is Running.
+4. Check that the network port numbers on the Student Agent page are the same
+   on the teacher and student computers.
+5. Check that the Windows firewall exception for the Student Agent is still in
+   place. The installer adds it; do not turn the firewall off.
+6. If the tile reports that access is denied, check the authentication keys
+   and access control settings (see section 4).
+7. If it still fails, contact managed support (see section 6).
+
+Being listed or reachable is not authorization
+- A computer that appears in the list or answers on the network is not
+  thereby authorized for access. The Teacher Console may access a student
+  computer only when the configured authentication and access control rules
+  allow it.
+
+
+==============================================================================
+4. NextSpace Classroom Administration basics
+==============================================================================
+
+- Open "NextSpace Classroom Administration" from the Start menu. Changing
+  computer-wide settings needs Windows administrator rights.
+- The pages on the left hold the settings, for example General, Student
+  Agent, Teacher Console, Access control, Authentication keys, Locations &
+  computers, Applications & websites and File transfer. View > Advanced shows
+  additional settings.
+- Apply saves your changes. Reset discards changes that are not yet saved.
+  If you close the window with unsaved changes, you are asked first.
+- After saving, you may be asked to restart the NextSpace Student Agent. Some
+  settings take effect only after that restart.
+- File > Save settings to file and File > Load settings from file copy a
+  configuration between computers. File > Reset configuration clears the
+  local configuration after a confirmation.
+
+Authentication keys and passwords
+- With key file authentication, the private key stays on teacher computers
+  only and the matching public key is installed on student computers. Anyone
+  who holds the private key can access the student computers, so protect it.
+- With logon authentication, the teacher signs in with an existing Windows user
+  name and password.
+- Access control rules decide which users may access student computers.
+- Keep keys and passwords out of e-mail, screenshots and shared folders.
+
+
+==============================================================================
+5. Security boundaries
+==============================================================================
+
+- Students should use standard Windows accounts, not administrator accounts.
+- NextSpace cannot protect a student computer against a person with local
+  Windows administrator rights on that computer.
+- Installation, keys and access settings should be set up and verified by the
+  managed-service technician.
+- Do not disable Windows security features, such as the firewall or antivirus
+  protection, to make NextSpace work.
+
+
+==============================================================================
+6. Support, version and licence
+==============================================================================
+
+Support
+- NextSpace Classroom Management is supported as a managed service by
+  EduLearn Technologies Inc.
+- E-mail: support@edulearntechnologies.com
+- Website: edulearntechnologies.com
+- Please include the computer names, the time, what you did and what you saw.
+  The version is shown in About.
+
+Version
+- NextSpace Classroom Management 1.0.0 - based on Veyon 4.11.4
+
+Licence and provenance
+- NextSpace Classroom Management is a modified version of Veyon 4.11.4.
+  Veyon is Copyright (c) 2004-2026 Veyon Solutions / Tobias Junghans.
+- It is distributed under the GNU General Public License, version 2 or (at
+  your option) any later version, WITHOUT ANY WARRANTY.
+- The licence text is in LICENSE.TXT in the installation folder and in About.
+  Third-party notices are in THIRD-PARTY-NOTICES.txt.

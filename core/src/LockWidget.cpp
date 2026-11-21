@@ -56,7 +56,7 @@ LockWidget::LockWidget( Mode mode, const QPixmap& background, QWidget* parent ) 
 	VeyonCore::platform().coreFunctions().setSystemUiState( false );
 	VeyonCore::platform().inputDeviceFunctions().disableInputDevices();
 
-	setWindowTitle( {} );
+	setWindowTitle( QStringLiteral( "NextSpace Student Agent" ) );
 
 #ifdef Q_OS_LINUX
 	show();

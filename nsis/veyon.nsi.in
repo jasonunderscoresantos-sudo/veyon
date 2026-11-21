@@ -1,14 +1,18 @@
 # APP_NAME is a compatibility identifier (it forms UNINSTALL_PATH); visible identity uses the DISPLAY_* values
 !define APP_NAME "Veyon"
 !define DISPLAY_NAME "NextSpace Classroom Management"
-!define DISPLAY_VERSION "Development build based on Veyon @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@"
+# NextSpace public release version (display, Apps list and numeric product version) with visible upstream
+# provenance; VERSION below stays the upstream-compatible file-version channel
+!define DISPLAY_VERSION "@NEXTSPACE_VERSION@"
+!define PRODUCT_VERSION_NUMERIC "@NEXTSPACE_VERSION_NUMERIC@"
+!define PROVENANCE "@NEXTSPACE_PROVENANCE@"
 !define COMP_NAME "EduLearn Technologies Inc"
 !define WEB_SITE "https://edulearntechnologies.com"
 !define VERSION "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@.@VERSION_BUILD@"
 !define COPYRIGHT "2004-2026 Veyon Solutions / Tobias Junghans"
 !define DESCRIPTION "NextSpace Classroom Management Installer"
 !define LICENSE_TXT "COPYING"
-!define INSTALLER_NAME "veyon-${VERSION}-@VEYON_WINDOWS_ARCH@-setup.exe"
+!define INSTALLER_NAME "@NEXTSPACE_INSTALLER_FILE@"
 !define MAIN_APP_EXE "veyon-master.exe"
 !define INSTALL_TYPE "SetShellVarContext all"
 !define REG_ROOT "HKLM"
@@ -17,10 +21,12 @@
 # NextSpace: all-users Start-menu folder; the upstream folder is only cleaned of known shortcuts
 !define STARTMENU_FOLDER "NextSpace Classroom Management"
 !define LEGACY_STARTMENU_FOLDER "Veyon"
+!define NEXTSPACE_STAGE_DIR "${__FILEDIR__}"
 
 ######################################################################
 
-VIProductVersion  "${VERSION}"
+VIProductVersion  "${PRODUCT_VERSION_NUMERIC}"
+VIFileVersion  "${VERSION}"
 VIAddVersionKey "ProductName"  "${DISPLAY_NAME}"
 VIAddVersionKey "CompanyName"  "${COMP_NAME}"
 VIAddVersionKey "LegalCopyright"  "${COPYRIGHT}"
@@ -32,9 +38,9 @@ VIAddVersionKey "FileVersion"  "${VERSION}"
 
 SetCompressor /SOLID lzma
 Name "${DISPLAY_NAME}"
-Caption "${DISPLAY_NAME} - ${DISPLAY_VERSION}"
+Caption "${DISPLAY_NAME} ${DISPLAY_VERSION} - ${PROVENANCE}"
 OutFile "${INSTALLER_NAME}"
-BrandingText "${DISPLAY_NAME} - ${DISPLAY_VERSION}"
+BrandingText "${DISPLAY_NAME} ${DISPLAY_VERSION} - ${PROVENANCE}"
 XPStyle on
 InstallDirRegKey "${REG_ROOT}" "${REG_APP_PATH}" ""
 InstallDir "$PROGRAMFILES64\Veyon"
@@ -46,17 +52,29 @@ RequestExecutionLevel admin
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
+!include "x64.nsh"
+!addincludedir "${__FILEDIR__}\nsis"
+
+; Declared before the first section that references them; the wrapper include is intentionally later
+; because its functions use section identifiers created below.
+Var NextSpaceProductState
+Var NextSpaceProductMutationStarted
+Var NextSpaceServiceRegisteredThisSession
+Var NextSpaceConfigMutatedThisSession
+Var NextSpacePriorServiceRemoved
+Var NextSpaceForceGuestMutated
 
 !define MUI_ABORTWARNING
 !define MUI_UNABORTWARNING
+!define MUI_FINISHPAGE_REBOOTLATER_DEFAULT
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "nsis/branding/nextspace-installer-welcome.bmp"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "nsis/branding/nextspace-installer-welcome.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\nsis\branding\nextspace-installer-welcome.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\nsis\branding\nextspace-installer-welcome.bmp"
 
-!define MUI_ICON "nsis/branding/nextspace-installer.ico"
-!define MUI_UNICON "nsis/branding/nextspace-uninstaller.ico"
+!define MUI_ICON "${__FILEDIR__}\nsis\branding\nextspace-installer.ico"
+!define MUI_UNICON "${__FILEDIR__}\nsis\branding\nextspace-uninstaller.ico"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "nsis/branding/nextspace-installer-header.bmp"
+!define MUI_HEADERIMAGE_BITMAP "${__FILEDIR__}\nsis\branding\nextspace-installer-header.bmp"
 !define MUI_HEADERIMAGE_RIGHT
 
 !define MUI_LANGDLL_REGISTRY_ROOT "${REG_ROOT}"
@@ -68,6 +86,8 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_TXT}"
 
 !insertmacro MUI_PAGE_DIRECTORY
+
+Page custom NextSpaceProfilePageCreate NextSpaceProfilePageLeave
 
 !insertmacro MUI_PAGE_COMPONENTS
 
@@ -86,75 +106,47 @@ RequestExecutionLevel admin
 !insertmacro MUI_UNPAGE_FINISH
 
 !insertmacro MUI_LANGUAGE "English" ;first language is the default language
-!insertmacro MUI_LANGUAGE "Afrikaans"
-!insertmacro MUI_LANGUAGE "Albanian"
-!insertmacro MUI_LANGUAGE "Arabic"
-!insertmacro MUI_LANGUAGE "Basque"
-!insertmacro MUI_LANGUAGE "Belarusian"
-!insertmacro MUI_LANGUAGE "Bosnian"
-!insertmacro MUI_LANGUAGE "Breton"
-!insertmacro MUI_LANGUAGE "Bulgarian"
-!insertmacro MUI_LANGUAGE "Catalan"
-!insertmacro MUI_LANGUAGE "Croatian"
-!insertmacro MUI_LANGUAGE "Czech"
-!insertmacro MUI_LANGUAGE "Danish"
-!insertmacro MUI_LANGUAGE "Dutch"
-!insertmacro MUI_LANGUAGE "Esperanto"
-!insertmacro MUI_LANGUAGE "Estonian"
-!insertmacro MUI_LANGUAGE "Farsi"
-!insertmacro MUI_LANGUAGE "Finnish"
-!insertmacro MUI_LANGUAGE "French"
-!insertmacro MUI_LANGUAGE "Galician"
-!insertmacro MUI_LANGUAGE "German"
-!insertmacro MUI_LANGUAGE "Greek"
-!insertmacro MUI_LANGUAGE "Hebrew"
-!insertmacro MUI_LANGUAGE "Hungarian"
-!insertmacro MUI_LANGUAGE "Icelandic"
-!insertmacro MUI_LANGUAGE "Indonesian"
-!insertmacro MUI_LANGUAGE "Irish"
-!insertmacro MUI_LANGUAGE "Italian"
-!insertmacro MUI_LANGUAGE "Japanese"
-!insertmacro MUI_LANGUAGE "Korean"
-!insertmacro MUI_LANGUAGE "Kurdish"
-!insertmacro MUI_LANGUAGE "Latvian"
-!insertmacro MUI_LANGUAGE "Lithuanian"
-!insertmacro MUI_LANGUAGE "Luxembourgish"
-!insertmacro MUI_LANGUAGE "Macedonian"
-!insertmacro MUI_LANGUAGE "Malay"
-!insertmacro MUI_LANGUAGE "Mongolian"
-!insertmacro MUI_LANGUAGE "Norwegian"
-!insertmacro MUI_LANGUAGE "NorwegianNynorsk"
-!insertmacro MUI_LANGUAGE "Polish"
-!insertmacro MUI_LANGUAGE "Portuguese"
-!insertmacro MUI_LANGUAGE "PortugueseBR"
-!insertmacro MUI_LANGUAGE "Romanian"
-!insertmacro MUI_LANGUAGE "Russian"
-!insertmacro MUI_LANGUAGE "Serbian"
-!insertmacro MUI_LANGUAGE "SerbianLatin"
-!insertmacro MUI_LANGUAGE "SimpChinese"
-!insertmacro MUI_LANGUAGE "Slovak"
-!insertmacro MUI_LANGUAGE "Slovenian"
-!insertmacro MUI_LANGUAGE "Spanish"
-!insertmacro MUI_LANGUAGE "SpanishInternational"
-!insertmacro MUI_LANGUAGE "Swedish"
-!insertmacro MUI_LANGUAGE "Thai"
-!insertmacro MUI_LANGUAGE "TradChinese"
-!insertmacro MUI_LANGUAGE "Turkish"
-!insertmacro MUI_LANGUAGE "Ukrainian"
-!insertmacro MUI_LANGUAGE "Uzbek"
-!insertmacro MUI_LANGUAGE "Welsh"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
 ######################################################################
 
+Section -NextSpacePreflight
+${INSTALL_TYPE}
+Call NextSpacePrepareRollback
+Call NextSpaceInstallInterception
+SectionEnd
+
 Section "NextSpace Student Agent" SEC_SERVICE
 SectionIn RO
 ${INSTALL_TYPE}
+StrCpy $NextSpaceProductMutationStarted 1
 ClearErrors
-ExecWait '"$INSTDIR\veyon-wcli.exe" service unregister'
-${If} $0 != 0
-  ExecWait '"$INSTDIR\veyon-ctl.exe" service unregister'
+StrCpy $0 -1
+StrCpy $R2 0
+ExecWait '"$INSTDIR\veyon-wcli.exe" service unregister' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  ClearErrors
+  StrCpy $0 -1
+  ExecWait '"$INSTDIR\veyon-ctl.exe" service unregister' $0
+  ${If} $NextSpaceProductState == 1
+  ${AndIf} ${Errors}
+    Abort "Existing Student Agent service unregister tool could not be launched."
+  ${ElseIf} $NextSpaceProductState == 1
+  ${AndIf} $0 != 0
+    Abort "Existing Student Agent service could not be unregistered safely."
+  ${EndIf}
+  ${IfNot} ${Errors}
+  ${AndIf} $0 == 0
+    StrCpy $R2 1
+  ${EndIf}
+${Else}
+  StrCpy $R2 1
+${EndIf}
+${If} $NextSpaceProductState == 1
+${AndIf} $R2 == 1
+  StrCpy $NextSpacePriorServiceRemoved 1
 ${EndIf}
 Delete "$INSTDIR\*.dll"
 Delete "$INSTDIR\*.exe"
@@ -164,58 +156,94 @@ RmDir /r "$INSTDIR\translations"
 SetOverwrite on
 SetOutPath "$INSTDIR"
 # core components
-File "veyon-server.exe"
-File "veyon-service.exe"
-File "veyon-configurator.exe"
-File "veyon-cli.exe"
-File "veyon-wcli.exe"
-File "veyon-worker.exe"
-File "*.dll"
-File "LICENSE.TXT"
-File "README.TXT"
-File "THIRD-PARTY-NOTICES.txt"
+File "${NEXTSPACE_STAGE_DIR}\veyon-server.exe"
+File "${NEXTSPACE_STAGE_DIR}\veyon-service.exe"
+File "${NEXTSPACE_STAGE_DIR}\veyon-configurator.exe"
+File "${NEXTSPACE_STAGE_DIR}\veyon-cli.exe"
+File "${NEXTSPACE_STAGE_DIR}\veyon-wcli.exe"
+File "${NEXTSPACE_STAGE_DIR}\veyon-worker.exe"
+File "${NEXTSPACE_STAGE_DIR}\*.dll"
+File "${NEXTSPACE_STAGE_DIR}\LICENSE.TXT"
+File "${NEXTSPACE_STAGE_DIR}\README.TXT"
+File "${NEXTSPACE_STAGE_DIR}\THIRD-PARTY-NOTICES.txt"
+# NextSpace offline help
+SetOutPath "$INSTDIR\help"
+File "${NEXTSPACE_STAGE_DIR}\help\index.html"
+File "${NEXTSPACE_STAGE_DIR}\help\quick-reference.txt"
 # plugins
 SetOutPath "$INSTDIR\plugins"
-File "plugins/*.dll"
+File "${NEXTSPACE_STAGE_DIR}\plugins\*.dll"
 # translations
 SetOutPath "$INSTDIR\translations"
-File "translations/*.qm"
+File /nonfatal "${NEXTSPACE_STAGE_DIR}\translations\*.qm"
 # QCA plugins
 SetOutPath "$INSTDIR\crypto"
-File "crypto/*.dll"
+File "${NEXTSPACE_STAGE_DIR}\crypto\*.dll"
 # Qt image format plugin
 SetOutPath "$INSTDIR\imageformats"
-File "imageformats/qjpeg.dll"
+File "${NEXTSPACE_STAGE_DIR}\imageformats\qjpeg.dll"
 # Qt platform plugin
 SetOutPath "$INSTDIR\platforms"
-File "platforms/qwindows.dll"
+File "${NEXTSPACE_STAGE_DIR}\platforms\qwindows.dll"
 SetOutPath "$INSTDIR\styles"
-File "styles/*.dll"
+File "${NEXTSPACE_STAGE_DIR}\styles\*.dll"
 # Qt TLS backend
 SetOutPath "$INSTDIR\tls"
-File "tls/qopensslbackend.dll"
+File "${NEXTSPACE_STAGE_DIR}\tls\qopensslbackend.dll"
 # configuration
-ExecWait '"$INSTDIR\veyon-wcli.exe" service register'
-ExecWait '"$INSTDIR\veyon-wcli.exe" config set Network/FirewallExceptionEnabled 1'
-ExecWait '"$INSTDIR\veyon-wcli.exe" config set Windows/SoftwareSASEnabled 1'
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" service register' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Student Agent service registration failed."
+${EndIf}
+StrCpy $NextSpaceServiceRegisteredThisSession 1
+${If} $NextSpaceProductState == 0
+  Call NextSpaceCaptureCleanConfiguration
+${EndIf}
+StrCpy $NextSpaceConfigMutatedThisSession 1
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" config set Network/FirewallExceptionEnabled 1' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Student Agent firewall configuration failed."
+${EndIf}
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" config set Windows/SoftwareSASEnabled 1' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Student Agent secure-attention configuration failed."
+${EndIf}
 # disable forced guest logon as otherwise logon authentication fails
+StrCpy $NextSpaceForceGuestMutated 1
 WriteRegDWORD ${REG_ROOT} "SYSTEM\CurrentControlSet\Control\Lsa"  "ForceGuest" "0"
 ${GetParameters} $R0
 ${GetOptions} $R0 "/ApplyConfig=" $R1
 ${If} $R1 != ""
   ClearErrors
+  StrCpy $0 -1
   ExecWait '"$INSTDIR\veyon-wcli.exe" config import "$R1"' $0
-  ${If} $0 != 0
-	   MessageBox MB_OK|MB_ICONSTOP "Could not apply specified configuration file!"
+  ${If} ${Errors}
+  ${OrIf} $0 != 0
+	   Abort "Could not apply specified configuration file."
   ${EndIf}
 ${EndIf}
-ExecWait '"$INSTDIR\veyon-wcli.exe" service start'
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" service start' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Student Agent service failed to start."
+${EndIf}
 SectionEnd
 
 Section "NextSpace Teacher Console" SEC_MASTER
 ${INSTALL_TYPE}
 SetOutPath "$INSTDIR"
-File "veyon-master.exe"
+File "${NEXTSPACE_STAGE_DIR}\veyon-master.exe"
 
 # NextSpace: remove Teacher Console shortcuts (upstream and current names) left by an earlier installation;
 # the Start menu one is recreated below only when enabled, the desktop one always
@@ -238,8 +266,12 @@ SectionEnd
 Section "Interception driver" SEC_INTERCEPTION
 ${INSTALL_TYPE}
 SetOutPath "$INSTDIR\interception"
-File "interception/*"
+File "${NEXTSPACE_STAGE_DIR}\interception\install-interception.exe"
+File "${NEXTSPACE_STAGE_DIR}\interception\install.bat"
+File "${NEXTSPACE_STAGE_DIR}\interception\uninstall.bat"
 SectionEnd
+
+!include "NextSpaceInterception.nsh"
 
 Function RunConfigurator
 	Exec '"$INSTDIR\veyon-configurator.exe"'
@@ -249,22 +281,32 @@ FunctionEnd
 ######################################################################
 
 Function .onInit
-${GetParameters} $R0
-${GetOptions} $R0 "/NoMaster" $R1
-${IfNot} ${Errors}
-  !insertmacro UnselectSection ${SEC_MASTER}
-${EndIf}
-${GetOptions} $R0 "/NoInterception" $R1
-${IfNot} ${Errors}
-  !insertmacro UnselectSection ${SEC_INTERCEPTION}
-${EndIf}
 UserInfo::GetAccountType
-pop $0
+Pop $0
 ${If} $0 != "admin"
-	MessageBox mb_iconstop "Please run the installer with administrative rights!"
+	MessageBox mb_iconstop "Please run the installer with administrative rights!" /SD IDOK
 	SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
 	Quit
 ${EndIf}
+SetRegView 64
+Call NextSpacePreflightArchitecture
+Call NextSpaceResolveProfile
+Call NextSpaceVerifyEmbeddedPayload
+Call NextSpaceClassifyProduct
+Call NextSpaceClassifyInterception
+${If} $NextSpaceDriverState == 3
+	MessageBox MB_OK|MB_ICONSTOP "A conflicting NextSpace Interception marker or managed footprint was detected. Installation stopped without guessing ownership." /SD IDOK
+	SetErrorLevel 1
+	Quit
+${EndIf}
+FunctionEnd
+
+Function .onSelChange
+Call NextSpaceApplyProfileSections
+FunctionEnd
+
+Function .onInstFailed
+Call NextSpaceRollbackInstall
 FunctionEnd
 
 ######################################################################
@@ -305,6 +347,9 @@ WriteIniStr "$INSTDIR\EduLearn Technologies website.url" "InternetShortcut" "URL
 CreateShortCut "$SMPROGRAMS\${STARTMENU_FOLDER}\EduLearn Technologies Website.lnk" "$INSTDIR\EduLearn Technologies website.url"
 ${EndIf}
 
+; Write and verify the native registration before retiring the predecessor x86 view.
+SetRegView 64
+ClearErrors
 WriteRegStr ${REG_ROOT} "${REG_APP_PATH}" "" "$INSTDIR\${MAIN_APP_EXE}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "DisplayName" "${DISPLAY_NAME}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "UninstallString" "$INSTDIR\uninstall.exe"
@@ -312,6 +357,33 @@ WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "DisplayIcon" "$INSTDIR\${MAIN_APP_
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "DisplayVersion" "${DISPLAY_VERSION}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "Publisher" "${COMP_NAME}"
 WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "URLInfoAbout" "${WEB_SITE}"
+${If} ${Errors}
+  DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
+  DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
+  Abort "Could not write the native NextSpace product registration."
+${EndIf}
+ClearErrors
+StrCpy $R2 0
+ReadRegStr $R0 ${REG_ROOT} "${UNINSTALL_PATH}" "DisplayName"
+${If} ${Errors}
+  StrCpy $R2 1
+${EndIf}
+ClearErrors
+ReadRegStr $R1 ${REG_ROOT} "${UNINSTALL_PATH}" "UninstallString"
+${If} ${Errors}
+  StrCpy $R2 1
+${EndIf}
+${If} $R2 == 1
+${OrIf} $R0 != "${DISPLAY_NAME}"
+${OrIf} $R1 != "$INSTDIR\uninstall.exe"
+  DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
+  DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
+  Abort "Could not verify the native NextSpace product registration."
+${EndIf}
+SetRegView 32
+DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
+DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
+SetRegView 64
 SectionEnd
 
 ######################################################################
@@ -319,17 +391,36 @@ SectionEnd
 Section Uninstall
 ${INSTALL_TYPE}
 
-ExecWait '"$INSTDIR\veyon-wcli.exe" config set Service/SoftwareSASEnabled 0'
-ExecWait '"$INSTDIR\veyon-wcli.exe" config set Network/FirewallExceptionEnabled 0'
-ExecWait '"$INSTDIR\veyon-wcli.exe" service unregister'
-ExecWait '"$INSTDIR\interception\install-interception.exe" /uninstall'
+SetRegView 64
+Call un.NextSpaceGuardedUninstallInterception
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" config set Service/SoftwareSASEnabled 0' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Could not disable Student Agent secure-attention configuration."
+${EndIf}
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" config set Network/FirewallExceptionEnabled 0' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Could not disable Student Agent firewall configuration."
+${EndIf}
+ClearErrors
+StrCpy $0 -1
+ExecWait '"$INSTDIR\veyon-wcli.exe" service unregister' $0
+${If} ${Errors}
+${OrIf} $0 != 0
+  Abort "Could not unregister the Student Agent service."
+${EndIf}
 # make sure the service is stopped and all file handles are released
 Sleep 2000
 
 ${GetParameters} $R0
 ${GetOptions} $R0 "/ClearConfig" $R1
 ${IfNot} ${Errors}
-	ExecWait '"$INSTDIR\veyon-wcli.exe" config clear'
+	ExecWait '"$INSTDIR\veyon-wcli.exe" config clear' $0
 ${EndIf}
 
 Delete "$INSTDIR\*.exe"
@@ -344,6 +435,10 @@ RmDir /r "$INSTDIR\styles"
 RmDir /r "$INSTDIR\tls"
 RmDir /r "$INSTDIR\translations"
 RmDir /r "$INSTDIR\interception"
+# NextSpace offline help: remove the two known files, then the folder only if empty (never recursive)
+Delete "$INSTDIR\help\index.html"
+Delete "$INSTDIR\help\quick-reference.txt"
+RmDir "$INSTDIR\help"
 
 RmDir "$INSTDIR"
 
@@ -372,6 +467,10 @@ Delete "$DESKTOP\NextSpace Teacher Console.lnk"
 
 DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
 DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
+SetRegView 32
+DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
+DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
+SetRegView 64
 SectionEnd
 
 ######################################################################
@@ -382,13 +481,10 @@ FunctionEnd
 
 ######################################################################
 
-# NextSpace: German component descriptions are a draft pending native-language review
+# NextSpace 1.0.0 installer: English only; upstream translation sources stay in the source tree
 LangString DESC_SEC_SERVICE ${LANG_ENGLISH} "NextSpace Student Agent and shared files required on all computers"
-LangString DESC_SEC_SERVICE ${LANG_GERMAN} "NextSpace Student Agent und gemeinsame Dateien, die auf allen Computern benötigt werden"
 LangString DESC_SEC_MASTER ${LANG_ENGLISH} "NextSpace Teacher Console for monitoring and controlling classroom computers"
-LangString DESC_SEC_MASTER ${LANG_GERMAN} "NextSpace Teacher Console zum Beobachten und Steuern der Computer im Klassenraum"
 LangString DESC_SEC_INTERCEPTION ${LANG_ENGLISH} "Special input device driver required for intercepting keyboard shortcuts such as Ctrl+Alt+Del in screen lock mode"
-LangString DESC_SEC_INTERCEPTION ${LANG_GERMAN} "Spezieller Eingabegerätetreiber, der zum Abfangen von Tastenkombinationen wie Strg+Alt+Entf im Bildschirmsperr-Modus benötigt wird"
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVICE} $(DESC_SEC_SERVICE)

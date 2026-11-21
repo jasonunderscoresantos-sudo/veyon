@@ -26,6 +26,7 @@
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QPainter>
 
 #include "ComputerSelectPanel.h"
 #include "ComputerManager.h"
@@ -48,6 +49,13 @@ ComputerSelectPanel::ComputerSelectPanel( ComputerManager& computerManager, QWid
 	m_filterProxyModel->setRecursiveFilteringEnabled(true);
 
 	ui->setupUi(this);
+	setAutoFillBackground( true );
+	setBackgroundRole( QPalette::Base );
+
+	auto sectionHeadingFont = ui->sectionHeadingLabel->font();
+	sectionHeadingFont.setPixelSize( 12 );
+	sectionHeadingFont.setWeight( QFont::DemiBold );
+	ui->sectionHeadingLabel->setFont( sectionHeadingFont );
 
 	// capture keyboard events for tree view
 	ui->treeView->installEventFilter( this );
@@ -89,6 +97,28 @@ ComputerSelectPanel::ComputerSelectPanel( ComputerManager& computerManager, QWid
 ComputerSelectPanel::~ComputerSelectPanel()
 {
 	delete ui;
+}
+
+
+
+QSize ComputerSelectPanel::sizeHint() const
+{
+	static constexpr int SidebarDefaultWidth = 224;
+	auto hint = QWidget::sizeHint();
+	hint.setWidth( SidebarDefaultWidth );
+	return hint;
+}
+
+
+
+void ComputerSelectPanel::paintEvent( QPaintEvent* event )
+{
+	QWidget::paintEvent( event );
+
+	QPainter painter( this );
+	painter.setPen( palette().color( QPalette::Mid ) );
+	const auto boundaryX = layoutDirection() == Qt::RightToLeft ? 0 : width() - 1;
+	painter.drawLine( boundaryX, 0, boundaryX, height() );
 }
 
 

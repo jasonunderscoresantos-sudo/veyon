@@ -2,16 +2,12 @@
   <qresource prefix="/core">
     <file>../../COPYING</file>
     <file>../../THIRD-PARTY-NOTICES.txt</file>
-    <file>icon64.png</file>
     <file>application-x-pem-key.png</file>
     <file>license.png</file>
     <file>user-group-new.png</file>
     <file>user-group-new-dark.png</file>
     <file>languages.png</file>
     <file>presentation-none.png</file>
-    <file>icon16.png</file>
-    <file>icon22.png</file>
-    <file>icon32.png</file>
     <file>document-open.png</file>
     <file>document-open-dark.png</file>
     <file>document-save.png</file>
@@ -38,8 +34,6 @@
     <file>media-playback-start.png</file>
     <file>media-playback-start-dark.png</file>
     <file>media-playback-stop.png</file>
-    <file>media-playback-stop-dark.png</file>
-    <file>media-record.png</file>
     <file>toast-close.png</file>
     <file>toast-error.png</file>
     <file>toast-information.png</file>

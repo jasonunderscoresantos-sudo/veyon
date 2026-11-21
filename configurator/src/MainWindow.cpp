@@ -43,6 +43,7 @@
 #include "VeyonConfiguration.h"
 #include "MainWindow.h"
 #include "NextSpaceActionIcons.h"
+#include "NextSpaceHelp.h"
 #include "PluginManager.h"
 
 #include "ui_MainWindow.h"
@@ -125,6 +126,9 @@ MainWindow::MainWindow( QWidget* parent ) :
 	connect( viewModeGroup, &QActionGroup::triggered, this, &MainWindow::updateView );
 
 	connect( ui->actionAboutQt, &QAction::triggered, QApplication::instance(), &QApplication::aboutQt );
+
+	// NextSpace offline help (GC3-S2): F1, visible text, tooltip and status tip come from MainWindow.ui
+	connect( ui->actionOfflineHelp, &QAction::triggered, this, &MainWindow::showOfflineHelp );
 
 	connect( &VeyonCore::config(), &VeyonConfiguration::configurationChanged, this, &MainWindow::configurationChanged );
 
@@ -316,6 +320,13 @@ void MainWindow::aboutVeyon()
 
 
 
+void MainWindow::showOfflineHelp()
+{
+	NextSpaceHelp::open( this );
+}
+
+
+
 void MainWindow::updateSizes()
 {
 	ui->configPages->setMinimumSize( ui->scrollArea->width() - ui->scrollArea->verticalScrollBar()->width(),
@@ -455,8 +466,8 @@ void MainWindow::updatePageIcons()
 
 void MainWindow::updateCommandIcons()
 {
-	// the File-menu commands render from the File menu's palette and About from the Help menu's palette; only these four
-	// icons are replaced (the MainWindow.ui icons stay as unused fallback bytes), and no action text, shortcut, state or
+	// the File-menu commands render from the File menu's palette and About and Offline Help from the Help menu's palette;
+	// only these four icons are replaced and the fifth is set (the MainWindow.ui icons stay as unused fallback bytes), and no action text, shortcut, state or
 	// connection is touched
 	using NextSpaceActionIcons::AdministrationCommand;
 	const auto filePalette = ui->menu_File->palette();
@@ -464,6 +475,8 @@ void MainWindow::updateCommandIcons()
 	ui->actionLoadSettings->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::LoadSettings, filePalette ) );
 	ui->actionResetConfiguration->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::ResetConfiguration, filePalette ) );
 	ui->actionAboutVeyon->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::About, ui->menu_Help->palette() ) );
+	// GC3-S2: the Offline Help action has no MainWindow.ui icon and takes its dedicated role from the Help menu's palette
+	ui->actionOfflineHelp->setIcon( NextSpaceActionIcons::forAdministrationCommand( AdministrationCommand::OfflineHelp, ui->menu_Help->palette() ) );
 }
 
 
