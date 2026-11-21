@@ -652,8 +652,10 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 		"QToolButton:hover { background-color: palette(alternate-base); border-color: palette(mid); }"
 		"QToolButton:checked { background-color: palette(highlight); color: palette(highlighted-text); }"
 		"QToolButton:focus { border: 2px solid palette(highlight); }" ).arg( ActionButtonRadius ) );
+	const auto actionButtonStyle = ToolButton::iconOnlyMode() ? Qt::ToolButtonIconOnly : Qt::ToolButtonTextBesideIcon;
 	for( auto* button : ui->toolBar->findChildren<ToolButton *>() )
 	{
+		button->setToolButtonStyle( actionButtonStyle );
 		button->setMinimumHeight( ActionButtonHeight );
 		button->setIconSize( QSize( ActionIconSize, ActionIconSize ) );
 	}
