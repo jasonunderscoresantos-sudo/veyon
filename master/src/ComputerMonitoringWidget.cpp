@@ -367,8 +367,27 @@ void ComputerMonitoringWidget::stopMousePressAndHoldFeature( )
 
 void ComputerMonitoringWidget::mousePressEvent( QMouseEvent* event )
 {
-	if( event->buttons() == Qt::LeftButton && indexAt(event->pos()).isValid() )
+	const auto index = indexAt( event->pos() );
+	if( event->button() == Qt::LeftButton && index.isValid() )
 	{
+		if( const auto delegate = qobject_cast<ComputerItemDelegate*>( itemDelegate() ) )
+		{
+			QStyleOptionViewItem itemOption;
+			initViewItemOption( &itemOption );
+			itemOption.rect = visualRect( index );
+			itemOption.decorationSize = iconSize();
+			itemOption.index = index;
+
+			if( delegate->selectionIndicatorRect( itemOption ).contains( event->pos() ) )
+			{
+				selectionModel()->select( index, QItemSelectionModel::Toggle );
+				selectionModel()->setCurrentIndex( index, QItemSelectionModel::NoUpdate );
+				viewport()->update( itemOption.rect );
+				event->accept();
+				return;
+			}
+		}
+
 		if( !m_ignoreMousePressAndHoldEvent )
 		{
 			m_mousePressAndHold.setInterval( 500 );

@@ -24,6 +24,7 @@
 
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QFrame>
@@ -38,6 +39,7 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QSplitter>
+#include <QSignalBlocker>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -315,8 +317,50 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 											.arg( ui->computerMonitoringWidget->selectionModel()->selectedIndexes().size() ) );
 	};
 	const auto monitoringModel = ui->computerMonitoringWidget->model();
+	const auto sourceModel = &m_master.computerControlListModel();
 	connect( ui->computerMonitoringWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, updateSelectionSummary );
 	updateSelectionSummary();
+	auto selectVisibleCheckBox = new QCheckBox( tr("Select visible"), monitoringViewControlsArea );
+	selectVisibleCheckBox->setObjectName( QStringLiteral("SelectVisibleCheckBox") );
+	selectVisibleCheckBox->setTristate( true );
+	selectVisibleCheckBox->setMinimumHeight( FilterControlHeight );
+	selectVisibleCheckBox->setToolTip( tr("Select or clear all computers currently shown.") );
+	selectVisibleCheckBox->setAccessibleName( tr("Select visible computers") );
+	const auto updateSelectVisible = [selectVisibleCheckBox, monitoringModel,
+									 uiSelectionModel = ui->computerMonitoringWidget->selectionModel()]() {
+		const auto visibleCount = monitoringModel->rowCount();
+		int selectedVisibleCount = 0;
+		for( int row = 0; row < visibleCount; ++row )
+		{
+			selectedVisibleCount += uiSelectionModel->isSelected( monitoringModel->index( row, 0 ) ) ? 1 : 0;
+		}
+
+		const QSignalBlocker blocker( selectVisibleCheckBox );
+		selectVisibleCheckBox->setEnabled( visibleCount > 0 );
+		selectVisibleCheckBox->setCheckState(
+			visibleCount == 0 || selectedVisibleCount == 0 ? Qt::Unchecked :
+			selectedVisibleCount == visibleCount ? Qt::Checked : Qt::PartiallyChecked );
+	};
+	connect( selectVisibleCheckBox, &QCheckBox::clicked, this,
+		[monitoringModel, uiSelectionModel = ui->computerMonitoringWidget->selectionModel()]( bool checked ) {
+			const auto visibleCount = monitoringModel->rowCount();
+			if( visibleCount > 0 )
+			{
+				const QItemSelection visibleRows( monitoringModel->index( 0, 0 ),
+										  monitoringModel->index( visibleCount - 1, 0 ) );
+				uiSelectionModel->select( visibleRows, checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect );
+			}
+		} );
+	connect( ui->computerMonitoringWidget->selectionModel(), &QItemSelectionModel::selectionChanged,
+			 this, updateSelectVisible );
+	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
+	{
+		connect( monitoringModel, signal, this, updateSelectVisible );
+	}
+	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateSelectVisible );
+	connect( monitoringModel, &QAbstractItemModel::layoutChanged, this, updateSelectVisible );
+	updateSelectVisible();
+	monitoringViewControlsLayout->addWidget( selectVisibleCheckBox );
 	monitoringViewControlsLayout->addStretch( 1 );
 	auto thumbnailSizeLabel = new QLabel( tr("Thumbnail size"), monitoringViewControlsArea );
 	thumbnailSizeLabel->setObjectName( QStringLiteral("ThumbnailSizeLabel") );
@@ -390,11 +434,28 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	viewportLayout->setContentsMargins( 0, 0, 0, 0 );
 	viewportLayout->addWidget( emptyState );
 
-	const auto updateEmptyState = [this, emptyState]() {
-		emptyState->setVisible( ui->computerMonitoringWidget->model()->rowCount() == 0 );
+	const auto updateEmptyState = [emptyState, emptyStateHeading, emptyStateHelper,
+								   monitoringModel, sourceModel, this]() {
+		const auto filteredEmpty = monitoringModel->rowCount() == 0;
+		if( sourceModel->rowCount() == 0 )
+		{
+			emptyStateHeading->setText( tr("No computers to display") );
+			emptyStateHelper->setText( tr("Review your existing locations and filters.") );
+		}
+		else
+		{
+			emptyStateHeading->setText( tr("No matching computers") );
+			emptyStateHelper->setText( tr("Clear the search or active filters.") );
+		}
+		emptyState->setVisible( filteredEmpty );
 	};
-	connect( monitoringModel, &QAbstractItemModel::rowsInserted, this, updateEmptyState );
-	connect( monitoringModel, &QAbstractItemModel::rowsRemoved, this, updateEmptyState );
+	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
+	{
+		connect( sourceModel, signal, this, updateEmptyState );
+		connect( monitoringModel, signal, this, updateEmptyState );
+	}
+	connect( sourceModel, &QAbstractItemModel::modelReset, this, updateEmptyState );
+	connect( sourceModel, &QAbstractItemModel::layoutChanged, this, updateEmptyState );
 	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateEmptyState );
 	connect( monitoringModel, &QAbstractItemModel::layoutChanged, this, updateEmptyState );
 	updateEmptyState();
@@ -476,7 +537,6 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	teacherWorkspaceLayout->addSpacing( ClassroomActionsBottomGap );
 	teacherWorkspaceLayout->addWidget( monitoringSplitter, 1 );
 
-	const auto sourceModel = &m_master.computerControlListModel();
 	const auto updateClassroomContext = [this, sourceModel, monitoringModel,
 										 classroomTitleLabel, classroomSummaryLabel]() {
 		const auto context = classroomContextSnapshot( *sourceModel );

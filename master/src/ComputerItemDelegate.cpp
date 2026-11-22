@@ -25,6 +25,7 @@
 #include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
+#include <QStyleOptionButton>
 
 #include "ComputerControlListModel.h"
 #include "ComputerItemDelegate.h"
@@ -45,31 +46,15 @@ void ComputerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 {
 	drawCard(painter, option);
 
-	// the upstream thumbnail and label are drawn unchanged inside the card; selection, focus and
-	// hover are shown by the card so the style must not tint the screen thumbnail
-	auto contentOption = option;
-	contentOption.rect = option.rect.adjusted(CardInset, CardInset, -CardInset, -CardInset);
-	contentOption.state &= ~(QStyle::State_Selected | QStyle::State_HasFocus | QStyle::State_MouseOver);
-	if (option.state.testFlag(QStyle::State_Selected))
-	{
-		contentOption.palette.setColor(QPalette::Text, m_colors.selectedText);
-	}
-
-	QStyledItemDelegate::paint(painter, contentOption, index);
-
-	if (index.isValid() && index.model())
+	if (index.isValid() && index.model() && painter)
 	{
 		const auto controlInterface = index.model()->data(index, ComputerControlListModel::ControlInterfaceRole).value<ComputerControlInterface::Pointer>();
+		const auto preview = previewRect(option);
 
-		if (controlInterface)
-		{
-			if (const auto label = stateLabel(controlInterface); label.isEmpty() == false)
-			{
-				drawStateBadge(painter, contentOption, index, label);
-			}
-		}
-
-		drawFeatureIcons(painter, contentOption.rect.topLeft(), controlInterface);
+		drawThumbnail(painter, preview, index);
+		drawSelectionIndicator(painter, option);
+		drawFooter(painter, option, preview, index, controlInterface);
+		drawFeatureIcons(painter, preview.topLeft(), controlInterface);
 	}
 }
 
@@ -77,55 +62,81 @@ void ComputerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
 QSize ComputerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-	QStyleOptionViewItem opt = option;
-	const auto style = QApplication::style();
+	auto opt = option;
+	initStyleOption(&opt, index);
+	const auto previewSize = option.decorationSize.isValid() ? option.decorationSize : opt.decorationSize;
+
+	auto nameFont = opt.font;
+	nameFont.setPixelSize(NameTextSize);
+	nameFont.setWeight(QFont::DemiBold);
+	auto statusFont = opt.font;
+	statusFont.setPixelSize(StatusTextSize);
+	const QFontMetrics nameMetrics(nameFont);
+	const QFontMetrics statusMetrics(statusFont);
+
+	auto cardWidth = previewSize.width() + 2 * CardPadding;
 
 	if (m_fullLengthLabels && index.model())
 	{
-		QSize maxSize;
 		for (int i = 0; i < index.model()->rowCount(); ++i)
 		{
-			initStyleOption(&opt, index.model()->index(i, 0));
-			const auto rowSize = style->sizeFromContents(QStyle::CT_ItemViewItem, &opt, QSize(), nullptr);
-			maxSize = maxSize.expandedTo(rowSize);
+			const auto rowIndex = index.model()->index(i, 0);
+			const auto controlInterface = rowIndex.data(ComputerControlListModel::ControlInterfaceRole)
+									  .value<ComputerControlInterface::Pointer>();
+			const auto name = controlInterface ? controlInterface->computerName() : rowIndex.data(Qt::DisplayRole).toString();
+			const auto status = controlInterface ? footerLabel(controlInterface) : QString{};
+			cardWidth = std::max(cardWidth, std::max(nameMetrics.horizontalAdvance(name),
+										 statusMetrics.horizontalAdvance(status)) + 2 * FooterPadding +
+										 SelectionIndicatorSize + SelectionIndicatorGap);
 		}
-		return maxSize + QSize(2 * CardInset, 2 * CardInset);
 	}
 
-	initStyleOption(&opt, index);
-	const auto size = style->sizeFromContents(QStyle::CT_ItemViewItem, &opt, QSize(), nullptr);
+	const auto footerHeight = 2 * FooterPadding + nameMetrics.height() + FooterLineGap + statusMetrics.height();
+	const auto cardHeight = CardPadding + previewSize.height() + footerHeight;
 
-	return QSize(std::min(size.width(), option.decorationSize.width()), size.height()) + QSize(2 * CardInset, 2 * CardInset);
+	return QSize(cardWidth + 2 * FocusMargin, cardHeight + 2 * FocusMargin);
+}
+
+
+
+QRect ComputerItemDelegate::selectionIndicatorRect(const QStyleOptionViewItem& option) const
+{
+	const auto card = option.rect.adjusted(FocusMargin, FocusMargin, -FocusMargin, -FocusMargin);
+	const auto preview = previewRect(option);
+	auto nameFont = option.font;
+	nameFont.setPixelSize(NameTextSize);
+	nameFont.setWeight(QFont::DemiBold);
+	const QFontMetrics nameMetrics(nameFont);
+	const auto nameLineTop = preview.bottom() + 1 + FooterPadding;
+
+	return QRect(card.left() + FooterPadding,
+				 nameLineTop + (nameMetrics.height() - SelectionIndicatorSize) / 2,
+				 SelectionIndicatorSize, SelectionIndicatorSize);
 }
 
 
 
 ComputerItemDelegate::CardColors ComputerItemDelegate::cardColors()
 {
-	// visual-rules.md tokens: border, primary/selection accent, selection fill, primary text, surface
+	// visual-rules.md tokens: Surface, Subtle surface, Border, Focus, Selection and text
 	if (VeyonCore::useDarkMode())
 	{
-		return {QColor(0x46586D), QColor(0x39C6C5), QColor(0x183D47), QColor(0xF1F5F9),
-				QColor(0x14, 0x22, 0x35, 235), QColor(0xF1F5F9)};
+		return {QColor(0x142235), QColor(0x1C2E43), QColor(0x5A7188), QColor(0x39C6C5),
+				QColor(0x183D47), QColor(0xF1F5F9), QColor(0xB2C0CF), QColor(0xF1F5F9)};
 	}
 
-	return {QColor(0xCBD5E1), QColor(0x087F8C), QColor(0xE3F5F5), QColor(0x10243A),
-			QColor(0xFF, 0xFF, 0xFF, 235), QColor(0x10243A)};
+	return {QColor(0xFFFFFF), QColor(0xEAF0F5), QColor(0x7F91A5), QColor(0x087F8C),
+			QColor(0xE3F5F5), QColor(0x10243A), QColor(0x526477), QColor(0x10243A)};
 }
 
 
 
 QString ComputerItemDelegate::stateLabel(const ComputerControlInterface::Pointer& controlInterface)
 {
-	// short text for the existing state images so state is never shown by the symbol alone
 	switch (controlInterface->state())
 	{
 	case ComputerControlInterface::State::Connected:
-		if (controlInterface->hasValidFramebuffer())
-		{
-			return {};
-		}
-		[[fallthrough]];
+		return controlInterface->hasValidFramebuffer() ? tr("Online") : tr("Connecting…");
 	case ComputerControlInterface::State::Connecting:
 		return tr("Connecting…");
 	case ComputerControlInterface::State::HostOffline:
@@ -146,8 +157,43 @@ QString ComputerItemDelegate::stateLabel(const ComputerControlInterface::Pointer
 
 
 
+QString ComputerItemDelegate::userLabel(const ComputerControlInterface::Pointer& controlInterface)
+{
+	if (controlInterface->userFullName().isEmpty() == false)
+	{
+		return controlInterface->userFullName();
+	}
+
+	if (controlInterface->userLoginName().isEmpty() == false)
+	{
+		return VeyonCore::stripDomain(controlInterface->userLoginName());
+	}
+
+	return tr("No user logged on");
+}
+
+
+
+QString ComputerItemDelegate::footerLabel(const ComputerControlInterface::Pointer& controlInterface)
+{
+	if (controlInterface->state() == ComputerControlInterface::State::Connected &&
+		controlInterface->hasValidFramebuffer())
+	{
+		return tr("Online · %1").arg(userLabel(controlInterface));
+	}
+
+	return stateLabel(controlInterface);
+}
+
+
+
 void ComputerItemDelegate::drawCard(QPainter* painter, const QStyleOptionViewItem& option) const
 {
+	if (painter == nullptr)
+	{
+		return;
+	}
+
 	const auto selected = option.state.testFlag(QStyle::State_Selected);
 	const auto hovered = option.state.testFlag(QStyle::State_MouseOver);
 	const auto cardRect = QRectF(option.rect).adjusted(FocusMargin, FocusMargin, -FocusMargin, -FocusMargin);
@@ -165,7 +211,8 @@ void ComputerItemDelegate::drawCard(QPainter* painter, const QStyleOptionViewIte
 
 	const auto borderWidth = selected ? 2.0 : 1.0;
 	painter->setPen(QPen(selected || hovered ? m_colors.accent : m_colors.border, borderWidth));
-	painter->setBrush(selected ? QBrush(m_colors.selectedFill) : QBrush(Qt::NoBrush));
+	painter->setBrush(selected ? QBrush(m_colors.selectedFill) :
+					  hovered ? QBrush(m_colors.subtleSurface) : QBrush(m_colors.surface));
 	painter->drawRoundedRect(cardRect.adjusted(borderWidth / 2, borderWidth / 2, -borderWidth / 2, -borderWidth / 2),
 							 CardRadius, CardRadius);
 
@@ -174,39 +221,99 @@ void ComputerItemDelegate::drawCard(QPainter* painter, const QStyleOptionViewIte
 
 
 
-void ComputerItemDelegate::drawStateBadge(QPainter* painter, const QStyleOptionViewItem& contentOption,
-										  const QModelIndex& index, const QString& label) const
+QRect ComputerItemDelegate::previewRect(const QStyleOptionViewItem& option) const
 {
-	// only used for state images (not live screens), so the extra style-option setup stays cheap
-	auto opt = contentOption;
-	initStyleOption(&opt, index);
-	const auto style = opt.widget ? opt.widget->style() : QApplication::style();
-	const auto decorationRect = style->subElementRect(QStyle::SE_ItemViewItemDecoration, &opt, opt.widget);
+	const auto card = option.rect.adjusted(FocusMargin, FocusMargin, -FocusMargin, -FocusMargin);
+	QRect preview(QPoint{}, option.decorationSize);
+	preview.moveTop(card.top() + CardPadding);
+	preview.moveLeft(card.center().x() - preview.width() / 2);
+	return preview;
+}
 
-	const QFontMetrics fontMetrics(opt.font);
-	const auto text = fontMetrics.elidedText(label, Qt::ElideRight,
-											  decorationRect.width() - 2 * (BadgeMargin + BadgePaddingX));
-	if (text.isEmpty() || text == QStringLiteral("…"))
-	{
-		return;
-	}
 
-	QRect badgeRect(0, 0, fontMetrics.horizontalAdvance(text) + 2 * BadgePaddingX, fontMetrics.height() + 2 * BadgePaddingY);
-	badgeRect.moveCenter(QPoint(decorationRect.center().x(),
-								decorationRect.bottom() - BadgeMargin - badgeRect.height() / 2));
-	if (badgeRect.top() < decorationRect.top())
+
+void ComputerItemDelegate::drawThumbnail(QPainter* painter, const QRect& rect, const QModelIndex& index) const
+{
+	const auto image = index.data(Qt::DecorationRole).value<QImage>();
+	if (painter == nullptr || image.isNull() || rect.isEmpty())
 	{
 		return;
 	}
 
 	painter->save();
-	painter->setRenderHint(QPainter::Antialiasing);
-	painter->setPen(m_colors.border);
-	painter->setBrush(m_colors.badgeFill);
-	painter->drawRoundedRect(QRectF(badgeRect).adjusted(0.5, 0.5, -0.5, -0.5), BadgeRadius, BadgeRadius);
-	painter->setFont(opt.font);
-	painter->setPen(m_colors.badgeText);
-	painter->drawText(badgeRect, Qt::AlignCenter, text);
+	painter->drawImage(rect, image, image.rect());
+	painter->restore();
+}
+
+
+
+void ComputerItemDelegate::drawSelectionIndicator(QPainter* painter, const QStyleOptionViewItem& option) const
+{
+	if (painter == nullptr)
+	{
+		return;
+	}
+
+	QStyleOptionButton checkBoxOption;
+	if (option.widget)
+	{
+		checkBoxOption.initFrom(option.widget);
+	}
+	checkBoxOption.palette = option.palette;
+	checkBoxOption.direction = option.direction;
+	checkBoxOption.rect = selectionIndicatorRect(option);
+	checkBoxOption.state = QStyle::State_Enabled |
+		(option.state.testFlag(QStyle::State_Selected) ? QStyle::State_On : QStyle::State_Off);
+
+	const auto style = option.widget ? option.widget->style() : QApplication::style();
+	style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &checkBoxOption, painter, option.widget);
+}
+
+
+
+void ComputerItemDelegate::drawFooter(QPainter* painter, const QStyleOptionViewItem& option, const QRect& preview,
+									  const QModelIndex& index,
+									  const ComputerControlInterface::Pointer& controlInterface) const
+{
+	if (painter == nullptr)
+	{
+		return;
+	}
+
+	const auto card = option.rect.adjusted(FocusMargin, FocusMargin, -FocusMargin, -FocusMargin);
+	const QRect footer(card.left() + FooterPadding, preview.bottom() + 1 + FooterPadding,
+					   card.width() - 2 * FooterPadding, card.bottom() - preview.bottom() - 2 * FooterPadding);
+	if (footer.isEmpty())
+	{
+		return;
+	}
+
+	auto nameFont = option.font;
+	nameFont.setPixelSize(NameTextSize);
+	nameFont.setWeight(QFont::DemiBold);
+	auto statusFont = option.font;
+	statusFont.setPixelSize(StatusTextSize);
+	const QFontMetrics nameMetrics(nameFont);
+	const QFontMetrics statusMetrics(statusFont);
+	const auto textInset = SelectionIndicatorSize + SelectionIndicatorGap;
+	const QRect textRect(footer.left() + textInset, footer.top(), footer.width() - textInset, footer.height());
+
+	const auto computerName = controlInterface ? controlInterface->computerName() : index.data(Qt::DisplayRole).toString();
+	const auto status = controlInterface ? footerLabel(controlInterface) : QString{};
+	const auto nameText = m_fullLengthLabels ? computerName : nameMetrics.elidedText(computerName, Qt::ElideRight, textRect.width());
+	const auto statusText = m_fullLengthLabels ? status : statusMetrics.elidedText(status, Qt::ElideRight, textRect.width());
+	const auto selected = option.state.testFlag(QStyle::State_Selected);
+
+	painter->save();
+	painter->setFont(nameFont);
+	painter->setPen(selected ? m_colors.selectedText : m_colors.primaryText);
+	painter->drawText(QRect(textRect.left(), textRect.top(), textRect.width(), nameMetrics.height()),
+					  Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, nameText);
+	painter->setFont(statusFont);
+	painter->setPen(selected ? m_colors.selectedText : m_colors.secondaryText);
+	painter->drawText(QRect(textRect.left(), textRect.top() + nameMetrics.height() + FooterLineGap,
+							textRect.width(), statusMetrics.height()),
+					  Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, statusText);
 	painter->restore();
 }
 
