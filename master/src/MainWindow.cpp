@@ -242,22 +242,65 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	ui->screenshotManagementPanelButton->setFocusPolicy( Qt::StrongFocus );
 
 	// NextSpace layout: search, filters and view controls sit directly above the computer grid
-	static constexpr int ControlHeight = 36;
+	static constexpr int FilterControlHeight = 36;
+	static constexpr int FilterSurfaceInset = 12;
+	static constexpr int FilterSurfaceGap = 8;
+	static constexpr int FilterSurfaceRadius = 10;
+	static constexpr int ControlMinimumWidth = 160;
+	static constexpr int MonitoringRowsGap = 14;
 	auto monitoringArea = new QWidget;
 	monitoringArea->setObjectName( QStringLiteral("MonitoringArea") );
 	auto monitoringAreaLayout = new QVBoxLayout( monitoringArea );
 	monitoringAreaLayout->setContentsMargins( 0, 0, 0, 0 );
 	monitoringAreaLayout->setSpacing( 0 );
+	auto monitoringFilterArea = new QWidget( monitoringArea );
+	monitoringFilterArea->setObjectName( QStringLiteral("MonitoringFilterArea") );
+	auto monitoringFilterLayout = new QHBoxLayout( monitoringFilterArea );
+	monitoringFilterLayout->setContentsMargins( FilterSurfaceInset, FilterSurfaceInset,
+										 FilterSurfaceInset, FilterSurfaceInset );
+	monitoringFilterLayout->setSpacing( FilterSurfaceGap );
+	ui->filterLineEdit->setPlaceholderText( tr("Find a computer or user…") );
+	ui->filterLineEdit->setMinimumWidth( ControlMinimumWidth );
+	ui->filterLineEdit->setMinimumHeight( FilterControlHeight );
+	auto searchSizePolicy = ui->filterLineEdit->sizePolicy();
+	searchSizePolicy.setHorizontalPolicy( QSizePolicy::Expanding );
+	ui->filterLineEdit->setSizePolicy( searchSizePolicy );
+	ui->filterPoweredOnComputersButton->setText( tr("Powered on only") );
+	ui->filterComputersWithLoggedOnUsersButton->setText( tr("Logged-in users only") );
+	ui->filterPoweredOnComputersButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	ui->filterComputersWithLoggedOnUsersButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	monitoringFilterLayout->addWidget( ui->filterLineEdit, 1 );
+	monitoringFilterLayout->addWidget( ui->filterPoweredOnComputersButton );
+	monitoringFilterLayout->addWidget( ui->filterComputersWithLoggedOnUsersButton );
+	monitoringArea->setStyleSheet( QStringLiteral(
+		"QWidget#MonitoringFilterArea { background-color: palette(base); border: 1px solid palette(mid); "
+		"border-radius: %1px; }"
+		"QWidget#MonitoringFilterArea QLineEdit { background-color: palette(base); color: palette(text); "
+		"border: 1px solid palette(mid); border-radius: 8px; padding: 0 12px; }"
+		"QWidget#MonitoringFilterArea QLineEdit:focus { border: 2px solid palette(link); }"
+		"QWidget#MonitoringFilterArea QToolButton { background-color: palette(button); color: palette(button-text); "
+		"border: 1px solid transparent; border-radius: 8px; padding: 0 12px; }"
+		"QWidget#MonitoringFilterArea QToolButton:hover { background-color: palette(alternate-base); "
+		"border-color: palette(mid); }"
+		"QWidget#MonitoringFilterArea QToolButton:checked { background-color: palette(highlight); "
+		"color: palette(highlighted-text); }"
+		"QWidget#MonitoringFilterArea QToolButton:focus { border: 2px solid palette(link); }"
+		"QWidget#MonitoringViewControlsArea QToolButton { background-color: palette(button); "
+		"color: palette(button-text); border: 1px solid transparent; border-radius: 8px; padding: 0 10px; }"
+		"QWidget#MonitoringViewControlsArea QToolButton:hover { background-color: palette(alternate-base); "
+		"border-color: palette(mid); }"
+		"QWidget#MonitoringViewControlsArea QToolButton:checked { background-color: palette(highlight); "
+		"color: palette(highlighted-text); }"
+		"QWidget#MonitoringViewControlsArea QToolButton:focus { border: 2px solid palette(link); }"
+		"QWidget#MonitoringViewControlsArea QToolButton:disabled { color: palette(mid); "
+		"background-color: palette(base); }" )
+		.arg( FilterSurfaceRadius ) );
 
-	auto monitoringControlsArea = new QWidget( monitoringArea );
-	monitoringControlsArea->setObjectName( QStringLiteral("MonitoringControlsArea") );
-	auto monitoringControlsLayout = new QHBoxLayout( monitoringControlsArea );
-	monitoringControlsLayout->setContentsMargins( 12, 8, 12, 8 );
-	monitoringControlsLayout->setSpacing( 8 );
-	monitoringControlsLayout->addWidget( ui->filterLineEdit, 3 );
-	monitoringControlsLayout->addWidget( ui->filterPoweredOnComputersButton );
-	monitoringControlsLayout->addWidget( ui->filterComputersWithLoggedOnUsersButton );
-	monitoringControlsLayout->addSpacing( 16 );
+	auto monitoringViewControlsArea = new QWidget( monitoringArea );
+	monitoringViewControlsArea->setObjectName( QStringLiteral("MonitoringViewControlsArea") );
+	auto monitoringViewControlsLayout = new QHBoxLayout( monitoringViewControlsArea );
+	monitoringViewControlsLayout->setContentsMargins( 0, 0, 0, 0 );
+	monitoringViewControlsLayout->setSpacing( FilterSurfaceGap );
 
 	// selection summary: describes, but does not change, which computers actions apply to
 	auto selectionSummaryLabel = new QLabel;
@@ -274,23 +317,36 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	const auto monitoringModel = ui->computerMonitoringWidget->model();
 	connect( ui->computerMonitoringWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, updateSelectionSummary );
 	updateSelectionSummary();
-	monitoringControlsLayout->addWidget( ui->gridSizeSlider, 1 );
-	monitoringControlsLayout->addWidget( ui->autoAdjustComputerIconSizeButton );
-	monitoringControlsLayout->addWidget( ui->useCustomComputerPositionsButton );
-	monitoringControlsLayout->addWidget( ui->alignComputersButton );
+	monitoringViewControlsLayout->addStretch( 1 );
+	auto thumbnailSizeLabel = new QLabel( tr("Thumbnail size"), monitoringViewControlsArea );
+	thumbnailSizeLabel->setObjectName( QStringLiteral("ThumbnailSizeLabel") );
+	thumbnailSizeLabel->setBuddy( ui->gridSizeSlider );
+	ui->gridSizeSlider->setMinimumWidth( ControlMinimumWidth );
+	ui->autoAdjustComputerIconSizeButton->setText( tr("Auto") );
+	ui->useCustomComputerPositionsButton->setText( tr("Custom positions") );
+	ui->alignComputersButton->setText( tr("Align") );
+	ui->autoAdjustComputerIconSizeButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	ui->useCustomComputerPositionsButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	ui->alignComputersButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	monitoringViewControlsLayout->addWidget( thumbnailSizeLabel );
+	monitoringViewControlsLayout->addWidget( ui->gridSizeSlider );
+	monitoringViewControlsLayout->addWidget( ui->autoAdjustComputerIconSizeButton );
+	monitoringViewControlsLayout->addWidget( ui->useCustomComputerPositionsButton );
+	monitoringViewControlsLayout->addWidget( ui->alignComputersButton );
 
-	ui->filterLineEdit->setMinimumHeight( ControlHeight );
 	for( auto* button : { ui->filterPoweredOnComputersButton, ui->filterComputersWithLoggedOnUsersButton,
 						  ui->autoAdjustComputerIconSizeButton, ui->useCustomComputerPositionsButton,
 						  ui->alignComputersButton } )
 	{
-		button->setMinimumSize( ControlHeight, ControlHeight );
+		button->setMinimumSize( FilterControlHeight, FilterControlHeight );
 	}
 
 	ui->centralLayout->removeWidget( ui->computerMonitoringWidget );
 	ui->centralLayout->setDirection( QBoxLayout::TopToBottom );
 	ui->centralLayout->addWidget( identityHeader );
-	monitoringAreaLayout->addWidget( monitoringControlsArea );
+	monitoringAreaLayout->addWidget( monitoringFilterArea );
+	monitoringAreaLayout->addSpacing( MonitoringRowsGap );
+	monitoringAreaLayout->addWidget( monitoringViewControlsArea );
 	auto monitoringGridArea = new QWidget( monitoringArea );
 	monitoringGridArea->setObjectName( QStringLiteral("MonitoringGridArea") );
 	auto monitoringGridAreaLayout = new QVBoxLayout( monitoringGridArea );
