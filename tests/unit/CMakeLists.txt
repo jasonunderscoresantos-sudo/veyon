@@ -122,6 +122,16 @@ if(WITH_TESTS AND VEYON_BUILD_WINDOWS)
 	)
 	if(WIN32)
 		add_dependencies(TeacherConsoleUiConvergenceTest windows-platform)
+		if(VEYON_BUILD_WIN64)
+			set(_teacher_test_interception_arch x64)
+		else()
+			set(_teacher_test_interception_arch x86)
+		endif()
+		add_custom_command(TARGET TeacherConsoleUiConvergenceTest POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+				${CMAKE_SOURCE_DIR}/../dependencies/Interception/Interception/library/${_teacher_test_interception_arch}/interception.dll
+				$<TARGET_FILE_DIR:TeacherConsoleUiConvergenceTest>
+		)
 	elseif(UNIX)
 		add_dependencies(TeacherConsoleUiConvergenceTest linux-platform)
 	endif()

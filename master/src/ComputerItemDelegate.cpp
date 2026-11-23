@@ -117,9 +117,9 @@ QRect ComputerItemDelegate::selectionIndicatorRect(const QStyleOptionViewItem& o
 
 ComputerItemDelegate::CardColors ComputerItemDelegate::cardColors(const QPalette& palette)
 {
-	return {palette.color( QPalette::Base ), palette.color( QPalette::AlternateBase ),
+	return {palette.color( QPalette::Button ), palette.color( QPalette::AlternateBase ),
 			palette.color( QPalette::Mid ), palette.color( QPalette::Link ),
-			palette.color( QPalette::Highlight ), palette.color( QPalette::Text ),
+			palette.color( QPalette::Highlight ), palette.color( QPalette::ButtonText ),
 			palette.color( QPalette::PlaceholderText ), palette.color( QPalette::HighlightedText )};
 }
 

@@ -407,6 +407,7 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	emptyState->setObjectName( QStringLiteral("MonitoringEmptyState") );
 	emptyState->setAttribute( Qt::WA_TransparentForMouseEvents );
 	emptyState->setFocusPolicy( Qt::NoFocus );
+	emptyState->setPalette( ui->computerMonitoringWidget->palette() );
 	auto emptyStateLayout = new QVBoxLayout( emptyState );
 	emptyStateLayout->setContentsMargins( 24, 24, 24, 24 );
 	emptyStateLayout->setSpacing( 8 );
@@ -447,7 +448,7 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 			emptyStateHelper->setText( tr("Clear the search or active filters.") );
 		}
 		emptyState->setVisible( filteredEmpty );
-		monitoringGridAreaLayout->setCurrentWidget( filteredEmpty ? emptyState : ui->computerMonitoringWidget );
+		filteredEmpty ? emptyState->raise() : ui->computerMonitoringWidget->raise();
 	};
 	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
 	{

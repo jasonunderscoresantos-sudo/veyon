@@ -8,9 +8,11 @@
 #include <QPainter>
 #include <QPixmapCache>
 #include <QApplication>
+#include <QStandardItemModel>
 #include <QStyledItemDelegate>
 #include <QtTest>
 
+#include "ComputerControlListModel.h"
 #include "ComputerControlInterface.h"
 #include "VeyonCore.h"
 
@@ -30,12 +32,17 @@ private Q_SLOTS:
 	{
 		QPalette palette;
 		palette.setCurrentColorGroup( QPalette::Active );
-		palette.setColor( QPalette::Active, QPalette::Base, QColor( 1, 2, 3 ) );
+		// ComputerMonitoringWidget intentionally overrides Base/Text with the
+		// configured canvas colors. Cards must use unaffected receiving-palette
+		// roles so those legacy overrides cannot replace the Surface/Text tokens.
+		palette.setColor( QPalette::Active, QPalette::Base, QColor( 101, 102, 103 ) );
+		palette.setColor( QPalette::Active, QPalette::Text, QColor( 104, 105, 106 ) );
+		palette.setColor( QPalette::Active, QPalette::Button, QColor( 1, 2, 3 ) );
+		palette.setColor( QPalette::Active, QPalette::ButtonText, QColor( 16, 17, 18 ) );
 		palette.setColor( QPalette::Active, QPalette::AlternateBase, QColor( 4, 5, 6 ) );
 		palette.setColor( QPalette::Active, QPalette::Mid, QColor( 7, 8, 9 ) );
 		palette.setColor( QPalette::Active, QPalette::Link, QColor( 10, 11, 12 ) );
 		palette.setColor( QPalette::Active, QPalette::Highlight, QColor( 13, 14, 15 ) );
-		palette.setColor( QPalette::Active, QPalette::Text, QColor( 16, 17, 18 ) );
 		palette.setColor( QPalette::Active, QPalette::PlaceholderText, QColor( 19, 20, 21 ) );
 		palette.setColor( QPalette::Active, QPalette::HighlightedText, QColor( 22, 23, 24 ) );
 
@@ -66,7 +73,19 @@ private Q_SLOTS:
 		ComputerItemDelegate delegate(false);
 		QStyleOptionViewItem option;
 		option.decorationSize = QSize(320, 180);
-		const auto logicalSize = delegate.sizeHint(option, {});
+		option.state = QStyle::State_Enabled | QStyle::State_Selected;
+
+		QStandardItemModel model(1, 1);
+		const auto index = model.index(0, 0);
+		const auto thumbnailColor = QColor( 203, 17, 91 );
+		QImage thumbnail(option.decorationSize, QImage::Format_ARGB32_Premultiplied);
+		thumbnail.fill(thumbnailColor);
+		const auto control = ComputerControlInterface::Pointer::create(
+			Computer( {}, QStringLiteral("LAB-01") ) );
+		model.setData(index, thumbnail, Qt::DecorationRole);
+		model.setData(index, QVariant::fromValue(control), ComputerControlListModel::ControlInterfaceRole);
+
+		const auto logicalSize = delegate.sizeHint(option, index);
 		QCOMPARE(logicalSize.width(), 340);
 
 		option.rect = QRect(QPoint{}, logicalSize);
@@ -80,11 +99,18 @@ private Q_SLOTS:
 		image.setDevicePixelRatio(devicePixelRatio);
 		image.fill(Qt::transparent);
 		QPainter painter(&image);
-		delegate.paint(&painter, option, {});
+		delegate.paint(&painter, option, index);
 		painter.end();
 
-		QCOMPARE(image.deviceIndependentSize(), QSizeF(logicalSize));
-		QVERIFY(image.constBits() != nullptr);
+		const auto renderedLogicalSize = image.deviceIndependentSize();
+		const auto roundingTolerance = 1.0 / devicePixelRatio;
+		QVERIFY(qAbs(renderedLogicalSize.width() - logicalSize.width()) < roundingTolerance);
+		QVERIFY(qAbs(renderedLogicalSize.height() - logicalSize.height()) < roundingTolerance);
+
+		const auto previewCenter = delegate.previewRect(option).center();
+		const auto physicalPreviewCenter = QPoint(qFloor(previewCenter.x() * devicePixelRatio),
+											qFloor(previewCenter.y() * devicePixelRatio));
+		QCOMPARE(image.pixelColor(physicalPreviewCenter), thumbnailColor);
 	}
 
 	void disconnectedAndAccessDeniedCopyRemainDistinct()
