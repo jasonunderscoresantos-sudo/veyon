@@ -76,8 +76,10 @@ private:
 	void runDoubleClickFeature( const QModelIndex& index );
 	void runMousePressAndHoldFeature( );
 	void stopMousePressAndHoldFeature( );
+	QModelIndex selectionIndicatorIndexAt( const QPoint& pos ) const;
 
 	void mousePressEvent( QMouseEvent* event ) override;
+	void mouseDoubleClickEvent( QMouseEvent* event ) override;
 	void mouseReleaseEvent( QMouseEvent* event ) override;
 	void mouseMoveEvent( QMouseEvent* event ) override;
 
@@ -86,6 +88,7 @@ private:
 	void wheelEvent( QWheelEvent* event ) override;
 
 	QMenu* m_featureMenu{};
+	bool m_selectionIndicatorGestureActive{false};
 	bool m_ignoreMousePressAndHoldEvent{false};
 	bool m_ignoreWheelEvent{false};
 	bool m_ignoreResizeEvent{false};

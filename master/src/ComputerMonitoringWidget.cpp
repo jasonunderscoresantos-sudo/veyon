@@ -365,30 +365,44 @@ void ComputerMonitoringWidget::stopMousePressAndHoldFeature( )
 
 
 
+QModelIndex ComputerMonitoringWidget::selectionIndicatorIndexAt( const QPoint& pos ) const
+{
+	const auto index = indexAt( pos );
+	const auto delegate = qobject_cast<ComputerItemDelegate*>( itemDelegate() );
+	if( index.isValid() == false || delegate == nullptr )
+	{
+		return {};
+	}
+
+	QStyleOptionViewItem itemOption;
+	initViewItemOption( &itemOption );
+	itemOption.rect = visualRect( index );
+	itemOption.decorationSize = iconSize();
+	itemOption.index = index;
+
+	return delegate->selectionIndicatorRect( itemOption ).contains( pos ) ? index : QModelIndex{};
+}
+
+
+
 void ComputerMonitoringWidget::mousePressEvent( QMouseEvent* event )
 {
-	const auto index = indexAt( event->pos() );
-	if( event->button() == Qt::LeftButton && index.isValid() )
+	if( event->button() == Qt::LeftButton )
 	{
-		if( const auto delegate = qobject_cast<ComputerItemDelegate*>( itemDelegate() ) )
+		m_selectionIndicatorGestureActive = false;
+		const auto selectionIndicatorIndex = selectionIndicatorIndexAt( event->pos() );
+		if( selectionIndicatorIndex.isValid() )
 		{
-			QStyleOptionViewItem itemOption;
-			initViewItemOption( &itemOption );
-			itemOption.rect = visualRect( index );
-			itemOption.decorationSize = iconSize();
-			itemOption.index = index;
-
-			if( delegate->selectionIndicatorRect( itemOption ).contains( event->pos() ) )
-			{
-				selectionModel()->select( index, QItemSelectionModel::Toggle );
-				selectionModel()->setCurrentIndex( index, QItemSelectionModel::NoUpdate );
-				viewport()->update( itemOption.rect );
-				event->accept();
-				return;
-			}
+			m_selectionIndicatorGestureActive = true;
+			selectionModel()->select( selectionIndicatorIndex, QItemSelectionModel::Toggle );
+			selectionModel()->setCurrentIndex( selectionIndicatorIndex, QItemSelectionModel::NoUpdate );
+			viewport()->update( visualRect( selectionIndicatorIndex ) );
+			event->accept();
+			return;
 		}
 
-		if( !m_ignoreMousePressAndHoldEvent )
+		const auto index = indexAt( event->pos() );
+		if( index.isValid() && !m_ignoreMousePressAndHoldEvent )
 		{
 			m_mousePressAndHold.setInterval( 500 );
 			m_mousePressAndHold.start();
@@ -400,8 +414,29 @@ void ComputerMonitoringWidget::mousePressEvent( QMouseEvent* event )
 
 
 
+void ComputerMonitoringWidget::mouseDoubleClickEvent( QMouseEvent* event )
+{
+	if( event->button() == Qt::LeftButton && selectionIndicatorIndexAt( event->pos() ).isValid() )
+	{
+		m_selectionIndicatorGestureActive = true;
+		event->accept();
+		return;
+	}
+
+	QListView::mouseDoubleClickEvent( event );
+}
+
+
+
 void ComputerMonitoringWidget::mouseReleaseEvent( QMouseEvent* event )
 {
+	if( event->button() == Qt::LeftButton && m_selectionIndicatorGestureActive )
+	{
+		m_selectionIndicatorGestureActive = false;
+		event->accept();
+		return;
+	}
+
 	m_mousePressAndHold.stop();
 	if ( m_ignoreMousePressAndHoldEvent )
 	{
@@ -414,6 +449,16 @@ void ComputerMonitoringWidget::mouseReleaseEvent( QMouseEvent* event )
 
 void ComputerMonitoringWidget::mouseMoveEvent( QMouseEvent* event )
 {
+	if( m_selectionIndicatorGestureActive )
+	{
+		if( event->buttons().testFlag( Qt::LeftButton ) )
+		{
+			event->accept();
+			return;
+		}
+		m_selectionIndicatorGestureActive = false;
+	}
+
 	m_mousePressAndHold.stop();
 	if ( m_ignoreNumberOfMouseEvents <= 0 )
 	{
