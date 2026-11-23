@@ -89,6 +89,7 @@ private:
 
 	QMenu* m_featureMenu{};
 	bool m_selectionIndicatorGestureActive{false};
+	bool m_selectionIndicatorDoubleClickPending{false};
 	bool m_ignoreMousePressAndHoldEvent{false};
 	bool m_ignoreWheelEvent{false};
 	bool m_ignoreResizeEvent{false};

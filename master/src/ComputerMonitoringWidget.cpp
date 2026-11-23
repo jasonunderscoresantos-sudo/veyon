@@ -390,10 +390,12 @@ void ComputerMonitoringWidget::mousePressEvent( QMouseEvent* event )
 	if( event->button() == Qt::LeftButton )
 	{
 		m_selectionIndicatorGestureActive = false;
+		m_selectionIndicatorDoubleClickPending = false;
 		const auto selectionIndicatorIndex = selectionIndicatorIndexAt( event->pos() );
 		if( selectionIndicatorIndex.isValid() )
 		{
 			m_selectionIndicatorGestureActive = true;
+			m_selectionIndicatorDoubleClickPending = true;
 			selectionModel()->select( selectionIndicatorIndex, QItemSelectionModel::Toggle );
 			selectionModel()->setCurrentIndex( selectionIndicatorIndex, QItemSelectionModel::NoUpdate );
 			viewport()->update( visualRect( selectionIndicatorIndex ) );
@@ -416,8 +418,11 @@ void ComputerMonitoringWidget::mousePressEvent( QMouseEvent* event )
 
 void ComputerMonitoringWidget::mouseDoubleClickEvent( QMouseEvent* event )
 {
-	if( event->button() == Qt::LeftButton && selectionIndicatorIndexAt( event->pos() ).isValid() )
+	if( event->button() == Qt::LeftButton &&
+		(m_selectionIndicatorDoubleClickPending ||
+		 selectionIndicatorIndexAt( event->pos() ).isValid()) )
 	{
+		m_selectionIndicatorDoubleClickPending = false;
 		m_selectionIndicatorGestureActive = true;
 		event->accept();
 		return;
