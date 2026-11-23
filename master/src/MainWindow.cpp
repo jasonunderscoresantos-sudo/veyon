@@ -41,6 +41,7 @@
 #include <QSplitter>
 #include <QSignalBlocker>
 #include <QToolButton>
+#include <QStackedLayout>
 #include <QVBoxLayout>
 
 #include "AboutDialog.h"
@@ -393,15 +394,16 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	monitoringAreaLayout->addWidget( monitoringViewControlsArea );
 	auto monitoringGridArea = new QWidget( monitoringArea );
 	monitoringGridArea->setObjectName( QStringLiteral("MonitoringGridArea") );
-	auto monitoringGridAreaLayout = new QVBoxLayout( monitoringGridArea );
+	auto monitoringGridAreaLayout = new QStackedLayout( monitoringGridArea );
 	monitoringGridAreaLayout->setContentsMargins( 0, 0, 0, 0 );
 	monitoringGridAreaLayout->setSpacing( 0 );
-	monitoringGridAreaLayout->addWidget( ui->computerMonitoringWidget, 1 );
+	monitoringGridAreaLayout->setStackingMode( QStackedLayout::StackAll );
+	monitoringGridAreaLayout->addWidget( ui->computerMonitoringWidget );
 	monitoringAreaLayout->addWidget( monitoringGridArea, 1 );
 
 	// NextSpace empty state: a non-interactive overlay inside the unchanged monitoring view, shown only while the
 	// view's filtered model has no rows; the view keeps its focus, selection, drop and context-menu behavior
-	auto emptyState = new QWidget( ui->computerMonitoringWidget->viewport() );
+	auto emptyState = new QWidget( monitoringGridArea );
 	emptyState->setObjectName( QStringLiteral("MonitoringEmptyState") );
 	emptyState->setAttribute( Qt::WA_TransparentForMouseEvents );
 	emptyState->setFocusPolicy( Qt::NoFocus );
@@ -429,12 +431,9 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	emptyStateHelper->setFont( emptyStateHelperFont );
 	emptyStateLayout->addStretch( 1 );
 
-	auto viewportLayout = new QVBoxLayout( ui->computerMonitoringWidget->viewport() );
-	viewportLayout->setSizeConstraint( QLayout::SetNoConstraint );
-	viewportLayout->setContentsMargins( 0, 0, 0, 0 );
-	viewportLayout->addWidget( emptyState );
+	monitoringGridAreaLayout->addWidget( emptyState );
 
-	const auto updateEmptyState = [emptyState, emptyStateHeading, emptyStateHelper,
+	const auto updateEmptyState = [emptyState, emptyStateHeading, emptyStateHelper, monitoringGridAreaLayout,
 								   monitoringModel, sourceModel, this]() {
 		const auto filteredEmpty = monitoringModel->rowCount() == 0;
 		if( sourceModel->rowCount() == 0 )
@@ -448,6 +447,7 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 			emptyStateHelper->setText( tr("Clear the search or active filters.") );
 		}
 		emptyState->setVisible( filteredEmpty );
+		monitoringGridAreaLayout->setCurrentWidget( filteredEmpty ? emptyState : ui->computerMonitoringWidget );
 	};
 	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
 	{
@@ -662,11 +662,26 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	// initialize filter controls
 	connect( ui->filterLineEdit, &QLineEdit::textChanged,
-			 this, [this]( const QString& filter ) { ui->computerMonitoringWidget->setSearchFilter( filter ); } );
+			 this, [this, updateSelectVisible, updateEmptyState, updateClassroomContext]( const QString& filter ) {
+		ui->computerMonitoringWidget->setSearchFilter( filter );
+		updateSelectVisible();
+		updateEmptyState();
+		updateClassroomContext();
+	} );
 	connect( ui->filterPoweredOnComputersButton, &QToolButton::toggled,
-			 this, [this]( bool enabled ) { ui->computerMonitoringWidget->setFilterPoweredOnComputers( enabled ); } );
+			 this, [this, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
+		ui->computerMonitoringWidget->setFilterPoweredOnComputers( enabled );
+		updateSelectVisible();
+		updateEmptyState();
+		updateClassroomContext();
+	} );
 	connect( ui->filterComputersWithLoggedOnUsersButton, &QToolButton::toggled,
-			 this, [this]( bool enabled ) { ui->computerMonitoringWidget->setFilterComputersWithLoggedOnUsers( enabled ); } );
+			 this, [this, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
+		ui->computerMonitoringWidget->setFilterComputersWithLoggedOnUsers( enabled );
+		updateSelectVisible();
+		updateEmptyState();
+		updateClassroomContext();
+	} );
 	ui->filterPoweredOnComputersButton->setChecked(m_master.userConfig().filterPoweredOnComputers());
 	ui->filterComputersWithLoggedOnUsersButton->setChecked(m_master.userConfig().filterComputersWithLoggedOnUsers());
 	// NextSpace accessibility: concise, translated names for the search field and the icon-only controls

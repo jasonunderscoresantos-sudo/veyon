@@ -34,7 +34,6 @@
 
 ComputerItemDelegate::ComputerItemDelegate(bool fullLengthLabels, QObject* parent) :
 	QStyledItemDelegate(parent),
-	m_colors(cardColors()),
 	m_fullLengthLabels(fullLengthLabels)
 {
 	initFeaturePixmaps();
@@ -54,7 +53,7 @@ void ComputerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 		drawThumbnail(painter, preview, index);
 		drawSelectionIndicator(painter, option);
 		drawFooter(painter, option, preview, index, controlInterface);
-		drawFeatureIcons(painter, preview.topLeft(), controlInterface);
+		drawFeatureIcons(painter, preview.topLeft(), option.palette, controlInterface);
 	}
 }
 
@@ -116,17 +115,12 @@ QRect ComputerItemDelegate::selectionIndicatorRect(const QStyleOptionViewItem& o
 
 
 
-ComputerItemDelegate::CardColors ComputerItemDelegate::cardColors()
+ComputerItemDelegate::CardColors ComputerItemDelegate::cardColors(const QPalette& palette)
 {
-	// visual-rules.md tokens: Surface, Subtle surface, Border, Focus, Selection and text
-	if (VeyonCore::useDarkMode())
-	{
-		return {QColor(0x142235), QColor(0x1C2E43), QColor(0x5A7188), QColor(0x39C6C5),
-				QColor(0x183D47), QColor(0xF1F5F9), QColor(0xB2C0CF), QColor(0xF1F5F9)};
-	}
-
-	return {QColor(0xFFFFFF), QColor(0xEAF0F5), QColor(0x7F91A5), QColor(0x087F8C),
-			QColor(0xE3F5F5), QColor(0x10243A), QColor(0x526477), QColor(0x10243A)};
+	return {palette.color( QPalette::Base ), palette.color( QPalette::AlternateBase ),
+			palette.color( QPalette::Mid ), palette.color( QPalette::Link ),
+			palette.color( QPalette::Highlight ), palette.color( QPalette::Text ),
+			palette.color( QPalette::PlaceholderText ), palette.color( QPalette::HighlightedText )};
 }
 
 
@@ -197,6 +191,7 @@ void ComputerItemDelegate::drawCard(QPainter* painter, const QStyleOptionViewIte
 	const auto selected = option.state.testFlag(QStyle::State_Selected);
 	const auto hovered = option.state.testFlag(QStyle::State_MouseOver);
 	const auto cardRect = QRectF(option.rect).adjusted(FocusMargin, FocusMargin, -FocusMargin, -FocusMargin);
+	const auto colors = cardColors(option.palette);
 
 	painter->save();
 	painter->setRenderHint(QPainter::Antialiasing);
@@ -204,15 +199,15 @@ void ComputerItemDelegate::drawCard(QPainter* painter, const QStyleOptionViewIte
 	if (option.state.testFlag(QStyle::State_HasFocus))
 	{
 		// 2 px focus ring with 2 px offset outside the card
-		painter->setPen(QPen(m_colors.accent, 2, Qt::DotLine));
+		painter->setPen(QPen(colors.accent, 2, Qt::DotLine));
 		painter->setBrush(Qt::NoBrush);
 		painter->drawRoundedRect(QRectF(option.rect).adjusted(1, 1, -1, -1), CardRadius + FocusMargin - 1, CardRadius + FocusMargin - 1);
 	}
 
 	const auto borderWidth = selected ? 2.0 : 1.0;
-	painter->setPen(QPen(selected || hovered ? m_colors.accent : m_colors.border, borderWidth));
-	painter->setBrush(selected ? QBrush(m_colors.selectedFill) :
-					  hovered ? QBrush(m_colors.subtleSurface) : QBrush(m_colors.surface));
+	painter->setPen(QPen(selected || hovered ? colors.accent : colors.border, borderWidth));
+	painter->setBrush(selected ? QBrush(colors.selectedFill) :
+					  hovered ? QBrush(colors.subtleSurface) : QBrush(colors.surface));
 	painter->drawRoundedRect(cardRect.adjusted(borderWidth / 2, borderWidth / 2, -borderWidth / 2, -borderWidth / 2),
 							 CardRadius, CardRadius);
 
@@ -303,14 +298,15 @@ void ComputerItemDelegate::drawFooter(QPainter* painter, const QStyleOptionViewI
 	const auto nameText = m_fullLengthLabels ? computerName : nameMetrics.elidedText(computerName, Qt::ElideRight, textRect.width());
 	const auto statusText = m_fullLengthLabels ? status : statusMetrics.elidedText(status, Qt::ElideRight, textRect.width());
 	const auto selected = option.state.testFlag(QStyle::State_Selected);
+	const auto colors = cardColors(option.palette);
 
 	painter->save();
 	painter->setFont(nameFont);
-	painter->setPen(selected ? m_colors.selectedText : m_colors.primaryText);
+	painter->setPen(selected ? colors.selectedText : colors.primaryText);
 	painter->drawText(QRect(textRect.left(), textRect.top(), textRect.width(), nameMetrics.height()),
 					  Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, nameText);
 	painter->setFont(statusFont);
-	painter->setPen(selected ? m_colors.selectedText : m_colors.secondaryText);
+	painter->setPen(selected ? colors.selectedText : colors.secondaryText);
 	painter->drawText(QRect(textRect.left(), textRect.top() + nameMetrics.height() + FooterLineGap,
 							textRect.width(), statusMetrics.height()),
 					  Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, statusText);
@@ -332,7 +328,8 @@ void ComputerItemDelegate::initFeaturePixmaps()
 
 
 
-void ComputerItemDelegate::drawFeatureIcons(QPainter* painter, const QPoint& pos, ComputerControlInterface::Pointer controlInterface) const
+void ComputerItemDelegate::drawFeatureIcons(QPainter* painter, const QPoint& pos, const QPalette& palette,
+											 ComputerControlInterface::Pointer controlInterface) const
 {
 	if (painter &&
 		controlInterface &&
@@ -354,10 +351,11 @@ void ComputerItemDelegate::drawFeatureIcons(QPainter* painter, const QPoint& pos
 
 		int x = pos.x() + OverlayIconsPadding;
 		const int y = pos.y() + OverlayIconsPadding;
+		const auto colors = cardColors(palette);
 
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->setBrush(QColor(255, 255, 255, 192));
-		painter->setPen(m_colors.accent);
+		painter->setPen(colors.accent);
 		painter->drawRoundedRect(QRect(x, y, count * (OverlayIconSize + OverlayIconSpacing), OverlayIconSize),
 								 OverlayIconsRadius, OverlayIconsRadius);
 

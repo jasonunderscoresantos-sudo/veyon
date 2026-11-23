@@ -100,4 +100,32 @@ if(WITH_TESTS AND VEYON_BUILD_WINDOWS)
 
 	add_test(NAME TeacherActionIconsTest COMMAND TeacherActionIconsTest)
 
+	#
+	# TeacherConsoleUiConvergenceTest: V3cc receiving-palette and truthful
+	# computer-card copy checks against the production delegate implementation.
+	#
+	add_executable(TeacherConsoleUiConvergenceTest
+		TeacherConsoleUiConvergenceTest.cpp
+		${CMAKE_SOURCE_DIR}/master/src/ComputerItemDelegate.cpp
+		${CMAKE_SOURCE_DIR}/master/src/ComputerItemDelegate.h
+	)
+	set_target_properties(TeacherConsoleUiConvergenceTest PROPERTIES UNITY_BUILD OFF)
+
+	target_include_directories(TeacherConsoleUiConvergenceTest PRIVATE
+		${CMAKE_SOURCE_DIR}/master/src
+	)
+
+	target_link_libraries(TeacherConsoleUiConvergenceTest PRIVATE
+		Qt${QT_MAJOR_VERSION}::Test
+		Qt${QT_MAJOR_VERSION}::Widgets
+		veyon-core
+	)
+	if(WIN32)
+		add_dependencies(TeacherConsoleUiConvergenceTest windows-platform)
+	elseif(UNIX)
+		add_dependencies(TeacherConsoleUiConvergenceTest linux-platform)
+	endif()
+
+	add_test(NAME TeacherConsoleUiConvergenceTest COMMAND TeacherConsoleUiConvergenceTest)
+
 endif()

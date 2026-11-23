@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <QPalette>
 #include <QPixmapCache>
 #include <QStyledItemDelegate>
 
@@ -53,7 +54,7 @@ private:
 		QColor selectedText;
 	};
 
-	static CardColors cardColors();
+	static CardColors cardColors(const QPalette& palette);
 	static QString stateLabel(const ComputerControlInterface::Pointer& controlInterface);
 	static QString userLabel(const ComputerControlInterface::Pointer& controlInterface);
 	static QString footerLabel(const ComputerControlInterface::Pointer& controlInterface);
@@ -65,7 +66,8 @@ private:
 	void drawSelectionIndicator(QPainter* painter, const QStyleOptionViewItem& option) const;
 	void drawFooter(QPainter* painter, const QStyleOptionViewItem& option, const QRect& preview,
 					const QModelIndex& index, const ComputerControlInterface::Pointer& controlInterface) const;
-	void drawFeatureIcons(QPainter* painter, const QPoint& pos, ComputerControlInterface::Pointer controlInterface) const;
+	void drawFeatureIcons(QPainter* painter, const QPoint& pos, const QPalette& palette,
+						  ComputerControlInterface::Pointer controlInterface) const;
 
 	static constexpr int OverlayIconSize = 32;
 	static constexpr int OverlayIconSpacing = 4;
@@ -83,7 +85,6 @@ private:
 	static constexpr int SelectionIndicatorSize = 16;
 	static constexpr int SelectionIndicatorGap = 8;
 
-	const CardColors m_colors;
 	QMap<QUuid, QPixmap> m_featurePixmaps;
 	bool m_fullLengthLabels;
 
