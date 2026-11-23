@@ -129,6 +129,9 @@ if(WITH_TESTS AND VEYON_BUILD_WINDOWS)
 		endif()
 		add_custom_command(TARGET TeacherConsoleUiConvergenceTest POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+				$<TARGET_FILE:veyon-core>
+				$<TARGET_FILE_DIR:TeacherConsoleUiConvergenceTest>
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
 				${CMAKE_SOURCE_DIR}/../dependencies/Interception/Interception/library/${_teacher_test_interception_arch}/interception.dll
 				$<TARGET_FILE_DIR:TeacherConsoleUiConvergenceTest>
 		)

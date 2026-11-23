@@ -30,6 +30,8 @@
 
 #include "ComputerControlInterface.h"
 
+class TeacherConsoleUiConvergenceTest;
+
 class ComputerItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
@@ -42,6 +44,8 @@ public:
 	QRect selectionIndicatorRect(const QStyleOptionViewItem& option) const;
 
 private:
+	friend class TeacherConsoleUiConvergenceTest;
+
 	struct CardColors
 	{
 		QColor surface;
@@ -55,6 +59,7 @@ private:
 	};
 
 	static CardColors cardColors(const QPalette& palette);
+	static CardColors cardColors(const QPalette& palette, bool highContrast);
 	static QString stateLabel(const ComputerControlInterface::Pointer& controlInterface);
 	static QString userLabel(const ComputerControlInterface::Pointer& controlInterface);
 	static QString footerLabel(const ComputerControlInterface::Pointer& controlInterface);

@@ -405,6 +405,7 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	// view's filtered model has no rows; the view keeps its focus, selection, drop and context-menu behavior
 	auto emptyState = new QWidget( monitoringGridArea );
 	emptyState->setObjectName( QStringLiteral("MonitoringEmptyState") );
+	emptyState->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
 	emptyState->setAttribute( Qt::WA_TransparentForMouseEvents );
 	emptyState->setFocusPolicy( Qt::NoFocus );
 	emptyState->setPalette( ui->computerMonitoringWidget->palette() );
@@ -434,7 +435,7 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	monitoringGridAreaLayout->addWidget( emptyState );
 
-	const auto updateEmptyState = [emptyState, emptyStateHeading, emptyStateHelper, monitoringGridAreaLayout,
+	const auto updateEmptyState = [emptyState, emptyStateHeading, emptyStateHelper,
 								   monitoringModel, sourceModel, this]() {
 		const auto filteredEmpty = monitoringModel->rowCount() == 0;
 		if( sourceModel->rowCount() == 0 )

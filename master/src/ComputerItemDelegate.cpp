@@ -26,6 +26,10 @@
 #include <QFontMetrics>
 #include <QPainter>
 #include <QStyleOptionButton>
+#include <QStyleHints>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+#include <QAccessibilityHints>
+#endif
 
 #include "ComputerControlListModel.h"
 #include "ComputerItemDelegate.h"
@@ -117,10 +121,30 @@ QRect ComputerItemDelegate::selectionIndicatorRect(const QStyleOptionViewItem& o
 
 ComputerItemDelegate::CardColors ComputerItemDelegate::cardColors(const QPalette& palette)
 {
-	return {palette.color( QPalette::Button ), palette.color( QPalette::AlternateBase ),
+	auto highContrast = false;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+	highContrast = QGuiApplication::styleHints()->accessibility()->contrastPreference() ==
+		Qt::ContrastPreference::HighContrast;
+#endif
+	return cardColors(palette, highContrast);
+}
+
+
+
+ComputerItemDelegate::CardColors ComputerItemDelegate::cardColors(const QPalette& palette, bool highContrast)
+{
+	auto surface = palette.color( QPalette::Button );
+	auto primaryText = palette.color( QPalette::ButtonText );
+	if( highContrast )
+	{
+		surface.setAlpha( 255 );
+		primaryText.setAlpha( 255 );
+	}
+	return {surface, highContrast ? surface : palette.color( QPalette::AlternateBase ),
 			palette.color( QPalette::Mid ), palette.color( QPalette::Link ),
-			palette.color( QPalette::Highlight ), palette.color( QPalette::ButtonText ),
-			palette.color( QPalette::PlaceholderText ), palette.color( QPalette::HighlightedText )};
+			palette.color( QPalette::Highlight ), primaryText,
+			highContrast ? primaryText : palette.color( QPalette::PlaceholderText ),
+			palette.color( QPalette::HighlightedText )};
 }
 
 

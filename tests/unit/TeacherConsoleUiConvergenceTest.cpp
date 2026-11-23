@@ -16,11 +16,7 @@
 #include "ComputerControlInterface.h"
 #include "VeyonCore.h"
 
-// Test the production helper results directly.  Access is widened only in this
-// translation unit; the shipped class remains unchanged.
-#define private public
 #include "ComputerItemDelegate.h"
-#undef private
 
 
 class TeacherConsoleUiConvergenceTest : public QObject
@@ -55,6 +51,26 @@ private Q_SLOTS:
 		QCOMPARE( colors.primaryText, QColor( 16, 17, 18 ) );
 		QCOMPARE( colors.secondaryText, QColor( 19, 20, 21 ) );
 		QCOMPARE( colors.selectedText, QColor( 22, 23, 24 ) );
+	}
+
+	void highContrastCardColorsRemainReadable()
+	{
+		QPalette palette;
+		palette.setCurrentColorGroup( QPalette::Active );
+		palette.setColor( QPalette::Active, QPalette::Button, QColor( "#202020" ) );
+		palette.setColor( QPalette::Active, QPalette::ButtonText, QColor( 255, 255, 255, 192 ) );
+		// Qt's Windows high-contrast palette can retain a light legacy
+		// AlternateBase and a translucent PlaceholderText. Neither is a
+		// readable partner for the system Button/ButtonText pair.
+		palette.setColor( QPalette::Active, QPalette::AlternateBase, QColor( "#e9e7e3" ) );
+		palette.setColor( QPalette::Active, QPalette::PlaceholderText, QColor( 255, 255, 255, 128 ) );
+
+		const auto colors = ComputerItemDelegate::cardColors( palette, true );
+		QCOMPARE( colors.surface, QColor( "#202020" ) );
+		QCOMPARE( colors.subtleSurface, QColor( "#202020" ) );
+		QCOMPARE( colors.primaryText, QColor( Qt::white ) );
+		QCOMPARE( colors.secondaryText, QColor( Qt::white ) );
+		QCOMPARE( colors.secondaryText.alpha(), 255 );
 	}
 
 	void cardGeometryRemainsLogicalAtScale_data()
