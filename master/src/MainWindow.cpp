@@ -320,6 +320,7 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	const auto monitoringModel = ui->computerMonitoringWidget->model();
 	const auto sourceModel = &m_master.computerControlListModel();
 	connect( ui->computerMonitoringWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, updateSelectionSummary );
+	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateSelectionSummary );
 	updateSelectionSummary();
 	auto selectVisibleCheckBox = new QCheckBox( tr("Select visible"), monitoringViewControlsArea );
 	selectVisibleCheckBox->setObjectName( QStringLiteral("SelectVisibleCheckBox") );
