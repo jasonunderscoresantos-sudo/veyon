@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QPixmapCache>
 #include <QApplication>
+#include <QSizeF>
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
 #include <QtTest>
@@ -118,7 +119,7 @@ private Q_SLOTS:
 		delegate.paint(&painter, option, index);
 		painter.end();
 
-		const auto renderedLogicalSize = image.deviceIndependentSize();
+		const auto renderedLogicalSize = QSizeF(image.size()) / image.devicePixelRatio();
 		const auto roundingTolerance = 1.0 / devicePixelRatio;
 		QVERIFY(qAbs(renderedLogicalSize.width() - logicalSize.width()) < roundingTolerance);
 		QVERIFY(qAbs(renderedLogicalSize.height() - logicalSize.height()) < roundingTolerance);
