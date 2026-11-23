@@ -663,22 +663,25 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	// initialize filter controls
 	connect( ui->filterLineEdit, &QLineEdit::textChanged,
-			 this, [this, updateSelectVisible, updateEmptyState, updateClassroomContext]( const QString& filter ) {
+			 this, [this, updateSelectionSummary, updateSelectVisible, updateEmptyState, updateClassroomContext]( const QString& filter ) {
 		ui->computerMonitoringWidget->setSearchFilter( filter );
+		updateSelectionSummary();
 		updateSelectVisible();
 		updateEmptyState();
 		updateClassroomContext();
 	} );
 	connect( ui->filterPoweredOnComputersButton, &QToolButton::toggled,
-			 this, [this, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
+			 this, [this, updateSelectionSummary, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
 		ui->computerMonitoringWidget->setFilterPoweredOnComputers( enabled );
+		updateSelectionSummary();
 		updateSelectVisible();
 		updateEmptyState();
 		updateClassroomContext();
 	} );
 	connect( ui->filterComputersWithLoggedOnUsersButton, &QToolButton::toggled,
-			 this, [this, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
+			 this, [this, updateSelectionSummary, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
 		ui->computerMonitoringWidget->setFilterComputersWithLoggedOnUsers( enabled );
+		updateSelectionSummary();
 		updateSelectVisible();
 		updateEmptyState();
 		updateClassroomContext();
