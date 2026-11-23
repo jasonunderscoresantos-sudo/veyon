@@ -28,6 +28,7 @@
 #include <QWidget>
 
 class QSortFilterProxyModel;
+class QPaintEvent;
 
 namespace Ui {
 class ComputerSelectPanel;
@@ -41,8 +42,12 @@ class ComputerSelectPanel : public QWidget
 public:
 	explicit ComputerSelectPanel( ComputerManager& computerManager, QWidget *parent = nullptr );
 	~ComputerSelectPanel() override;
+	QSize sizeHint() const override;
 
 	bool eventFilter(QObject *watched, QEvent *event) override;
+
+protected:
+	void paintEvent( QPaintEvent* event ) override;
 
 private Q_SLOTS:
 	void addLocation();

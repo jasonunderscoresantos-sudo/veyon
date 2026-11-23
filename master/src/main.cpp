@@ -70,6 +70,7 @@ static void applyNextSpacePalette( QApplication& app )
 		palette.setColor( group, QPalette::WindowText, primaryText );
 		palette.setColor( group, QPalette::Base, surface );
 		palette.setColor( group, QPalette::AlternateBase, subtleSurface );
+		palette.setColor( group, QPalette::Mid, border );
 		palette.setColor( group, QPalette::Text, primaryText );
 		palette.setColor( group, QPalette::Button, surface );
 		palette.setColor( group, QPalette::ButtonText, primaryText );

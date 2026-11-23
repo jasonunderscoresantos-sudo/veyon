@@ -63,6 +63,18 @@ else()
 	string(REPLACE "v" "" VERSION_STRING "${VERSION_STRING}")
 endif()
 
+# NextSpace public release identity: fixed values kept separate from the upstream-compatible VERSION_* channel
+# above, which continues to drive FileVersion, manifests, ABI/internal identity and stage directory names
+set(NEXTSPACE_VERSION_MAJOR 1)
+set(NEXTSPACE_VERSION_MINOR 0)
+set(NEXTSPACE_VERSION_PATCH 0)
+set(NEXTSPACE_VERSION_BUILD 0)
+set(NEXTSPACE_VERSION "${NEXTSPACE_VERSION_MAJOR}.${NEXTSPACE_VERSION_MINOR}.${NEXTSPACE_VERSION_PATCH}")
+set(NEXTSPACE_VERSION_NUMERIC "${NEXTSPACE_VERSION}.${NEXTSPACE_VERSION_BUILD}")
+set(NEXTSPACE_UPSTREAM_BASE_VERSION "4.11.4")
+set(NEXTSPACE_PROVENANCE "based on Veyon ${NEXTSPACE_UPSTREAM_BASE_VERSION}")
+set(NEXTSPACE_DISPLAY_VERSION "NextSpace Classroom Management ${NEXTSPACE_VERSION} — ${NEXTSPACE_PROVENANCE}")
+
 find_package(Git)
 
 if(GIT_FOUND)
@@ -103,6 +115,9 @@ if(WIN32)
 		set(VEYON_BUILD_WIN32 1)
 		set(VEYON_WINDOWS_ARCH "win32")
 	endif()
+	set(NEXTSPACE_INSTALLER_FILE
+		"NextSpace-Classroom-Management-${NEXTSPACE_VERSION}-${VEYON_WINDOWS_ARCH}-setup.exe"
+	)
 	add_definitions(-DUNICODE -D_UNICODE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-attributes")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")

@@ -66,7 +66,7 @@ void ToolButton::setIconOnlyMode( QWidget* mainWindow, bool enabled )
 	const auto toolButtons = mainWindow->findChildren<ToolButton *>();
 	for( auto toolButton : toolButtons )
 	{
-		toolButton->setToolButtonStyle(enabled ? Qt::ToolButtonIconOnly : Qt::ToolButtonTextUnderIcon);
+		toolButton->setToolButtonStyle( enabled ? Qt::ToolButtonIconOnly : Qt::ToolButtonTextBesideIcon );
 	}
 }
 

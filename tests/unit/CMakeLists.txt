@@ -100,4 +100,45 @@ if(WITH_TESTS AND VEYON_BUILD_WINDOWS)
 
 	add_test(NAME TeacherActionIconsTest COMMAND TeacherActionIconsTest)
 
+	#
+	# TeacherConsoleUiConvergenceTest: V3cc receiving-palette and truthful
+	# computer-card copy checks against the production delegate implementation.
+	#
+	add_executable(TeacherConsoleUiConvergenceTest
+		TeacherConsoleUiConvergenceTest.cpp
+		${CMAKE_SOURCE_DIR}/master/src/ComputerItemDelegate.cpp
+		${CMAKE_SOURCE_DIR}/master/src/ComputerItemDelegate.h
+	)
+	set_target_properties(TeacherConsoleUiConvergenceTest PROPERTIES UNITY_BUILD OFF)
+
+	target_include_directories(TeacherConsoleUiConvergenceTest PRIVATE
+		${CMAKE_SOURCE_DIR}/master/src
+	)
+
+	target_link_libraries(TeacherConsoleUiConvergenceTest PRIVATE
+		Qt${QT_MAJOR_VERSION}::Test
+		Qt${QT_MAJOR_VERSION}::Widgets
+		veyon-core
+	)
+	if(WIN32)
+		add_dependencies(TeacherConsoleUiConvergenceTest windows-platform)
+		if(VEYON_BUILD_WIN64)
+			set(_teacher_test_interception_arch x64)
+		else()
+			set(_teacher_test_interception_arch x86)
+		endif()
+		add_custom_command(TARGET TeacherConsoleUiConvergenceTest POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+				$<TARGET_FILE:veyon-core>
+				$<TARGET_FILE_DIR:TeacherConsoleUiConvergenceTest>
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+				${CMAKE_SOURCE_DIR}/../dependencies/Interception/Interception/library/${_teacher_test_interception_arch}/interception.dll
+				$<TARGET_FILE_DIR:TeacherConsoleUiConvergenceTest>
+		)
+	elseif(UNIX)
+		add_dependencies(TeacherConsoleUiConvergenceTest linux-platform)
+	endif()
+
+	add_test(NAME TeacherConsoleUiConvergenceTest COMMAND TeacherConsoleUiConvergenceTest)
+
 endif()

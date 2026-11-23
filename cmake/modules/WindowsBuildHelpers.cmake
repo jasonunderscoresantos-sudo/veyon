@@ -23,12 +23,18 @@ function(add_windows_resources TARGET)
 	set(VERSIONINFO_COMPANY "Veyon Solutions")
 	set(VERSIONINFO_PRODUCT "Veyon")
 	set(VERSIONINFO_PRODUCT_VERSION "${VERSION_STRING}")
+	set(VERSIONINFO_PRODUCTVERSION_LINE "")
 	if (arg_NEXTSPACE_ROLE OR arg_NEXTSPACE_COMPONENT)
-		# NextSpace role executables and component DLLs: product/publisher identity; the version stays labelled as upstream provenance
+		# NextSpace role executables and component DLLs: product/publisher identity and the public NextSpace
+		# product version; FILEVERSION/FileVersion and the manifest stay on the upstream-compatible VERSION_* channel
+		if (NOT NEXTSPACE_VERSION OR NOT NEXTSPACE_VERSION_NUMERIC)
+			message(FATAL_ERROR "NextSpace public version is not defined for ${TARGET}")
+		endif()
 		set(VERSIONINFO_COMMENTS "NextSpace Classroom Management, based on Veyon (https://veyon.io)")
 		set(VERSIONINFO_COMPANY "EduLearn Technologies Inc")
 		set(VERSIONINFO_PRODUCT "NextSpace Classroom Management")
-		set(VERSIONINFO_PRODUCT_VERSION "Development build based on Veyon ${VERSION_STRING}")
+		set(VERSIONINFO_PRODUCT_VERSION "${NEXTSPACE_VERSION}")
+		set(VERSIONINFO_PRODUCTVERSION_LINE "	PRODUCTVERSION ${NEXTSPACE_VERSION_MAJOR},${NEXTSPACE_VERSION_MINOR},${NEXTSPACE_VERSION_PATCH},${NEXTSPACE_VERSION_BUILD}\n")
 	endif()
 
 	if (arg_CONSOLE)
@@ -51,6 +57,7 @@ function(add_windows_resources TARGET)
 		"CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST ${TARGET}.${SUFFIX}.manifest\n"
 		"VS_VERSION_INFO VERSIONINFO\n"
 		"	FILEVERSION   ${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_BUILD}\n"
+		"${VERSIONINFO_PRODUCTVERSION_LINE}"
 		"	FILEFLAGSMASK 0x0L\n"
 		"	FILEOS        VOS_NT_WINDOWS32\n"
 		"	FILETYPE      ${FILETYPE}\n"

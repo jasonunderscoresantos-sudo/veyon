@@ -37,7 +37,8 @@ QIcon forFeature( const Feature& feature, const QPalette& palette );
 QIcon more( const QPalette& palette );
 
 // semantic roles of the Teacher view-strip toggles, grid filters and layout controls, the custom-positions menu
-// and the About button (V3ao); each role draws one outline for both checked states
+// and the About button (V3ao), and the offline Help button (GC3-S2), which reuses the reviewed info-circle; each role
+// draws one outline for both checked states
 enum class ViewControl
 {
 	ComputerSelectPanel,
@@ -51,7 +52,8 @@ enum class ViewControl
 	AlignComputers,
 	LoadComputerPositions,
 	SaveComputerPositions,
-	About
+	About,
+	Help
 };
 
 QIcon forViewControl( ViewControl control, const QPalette& palette );
@@ -134,13 +136,15 @@ QIcon forAdministrationPage( AdministrationPage page, const QPalette& palette );
 // semantic roles of the four Administration (Configurator) menu commands of V3AM-090 (V3bc), mapped separately from
 // the Teacher view and secondary controls although all four reuse reviewed glyphs: Save settings to file, Load settings
 // from file, About and Reset configuration; the Configurator renders each in its owning menu's palette, every role draws
-// one outline for both Off and On, and the action labels remain the primary cues
+// one outline for both Off and On, and the action labels remain the primary cues; the Help-menu Offline Help command
+// (GC3-S2) is a fifth, dedicated role that also reuses the reviewed info-circle
 enum class AdministrationCommand
 {
 	SaveSettings,
 	LoadSettings,
 	About,
-	ResetConfiguration
+	ResetConfiguration,
+	OfflineHelp
 };
 
 QIcon forAdministrationCommand( AdministrationCommand command, const QPalette& palette );

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<meta name="referrer" content="no-referrer">
+<title>NextSpace Classroom Management - Offline Quick Reference</title>
+<style>
+:root {
+	color-scheme: light dark;
+	--canvas: #F4F7FA;
+	--surface: #FFFFFF;
+	--subtle: #EAF0F5;
+	--text: #10243A;
+	--text-secondary: #526477;
+	--border: #7F91A5;
+	--accent: #087F8C;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		--canvas: #0B1420;
+		--surface: #142235;
+		--subtle: #1C2E43;
+		--text: #F1F5F9;
+		--text-secondary: #B2C0CF;
+		--border: #5A7188;
+		--accent: #39C6C5;
+	}
+}
+* { box-sizing: border-box; }
+html { background: var(--canvas); }
+body {
+	margin: 0;
+	padding: 24px;
+	background: var(--canvas);
+	color: var(--text);
+	font-family: "Segoe UI", system-ui, sans-serif;
+	font-size: 14px;
+	line-height: 1.55;
+}
+main { max-width: 860px; margin: 0 auto; }
+header { border-bottom: 2px solid var(--accent); padding-bottom: 12px; margin-bottom: 16px; }
+h1 { font-size: 24px; margin: 0 0 4px; font-weight: 600; }
+h2 { font-size: 20px; margin: 0 0 8px; font-weight: 600; }
+h3 { font-size: 14px; margin: 16px 0 4px; font-weight: 600; }
+.meta { color: var(--text-secondary); font-size: 12px; margin: 0; }
+section, nav {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	padding: 16px 24px;
+	margin: 0 0 16px;
+}
+nav ol { margin: 4px 0 0; }
+ul, ol { padding-left: 24px; margin: 4px 0; }
+li { margin: 2px 0; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { background: var(--subtle); border-left: 4px solid var(--accent); padding: 8px 12px; border-radius: 4px; }
+kbd {
+	font-family: inherit;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 0 4px;
+	background: var(--subtle);
+}
+@media (max-width: 600px) {
+	body { padding: 16px; }
+	section, nav { padding: 12px 16px; }
+}
+@media (forced-colors: active) {
+	section, nav, .note { border: 1px solid CanvasText; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+<h1>NextSpace Classroom Management - Offline Quick Reference</h1>
+<p class="meta">Version 1.0.0 - based on Veyon 4.11.4</p>
+<p class="meta">EduLearn Technologies Inc</p>
+</header>
+
+<p>This quick reference is installed with NextSpace Classroom Management and works without Internet access. It describes only what this version can do. Press <kbd>F1</kbd> in NextSpace Teacher Console or NextSpace Classroom Administration to open it.</p>
+
+<nav aria-label="Contents">
+<h2>Contents</h2>
+<ol>
+<li><a href="#teacher-console">Using NextSpace Teacher Console</a></li>
+<li><a href="#stopping">Stopping and reversing actions</a></li>
+<li><a href="#student-agent">NextSpace Student Agent and network troubleshooting</a></li>
+<li><a href="#administration">NextSpace Classroom Administration basics</a></li>
+<li><a href="#security">Security boundaries</a></li>
+<li><a href="#support">Support, version and licence</a></li>
+</ol>
+</nav>
+
+<section id="teacher-console" aria-labelledby="h-teacher-console">
+<h2 id="h-teacher-console">1. Using NextSpace Teacher Console</h2>
+
+<h3>Starting</h3>
+<ul>
+<li>Open "NextSpace Teacher Console" from the Start menu or the desktop shortcut.</li>
+<li>Depending on the configured authentication method, you may be asked for your Windows user name and password.</li>
+<li>The console shows the computers listed in the locations that Classroom Administration has configured. It does not add computers by itself.</li>
+</ul>
+
+<h3>Displaying and filtering computers</h3>
+<ul>
+<li>"Locations &amp; computers" opens the list of locations. Tick the locations and computers you want to see in the grid.</li>
+<li>"Search users and computers" filters the grid by computer or user name.</li>
+<li>"Only show powered on computers" and "Only show computers with logged on users" hide the other computers.</li>
+<li>The thumbnail size slider and "Auto" change the size of the computer tiles.</li>
+<li>"Use custom computer arrangement" lets you place tiles freely. Press and hold it to load an arrangement from a file or save the current one to a file. "Align computers to grid" tidies the custom arrangement.</li>
+<li><kbd>F5</kbd> reloads the computer list. <kbd>F11</kbd> switches full screen on or off.</li>
+</ul>
+
+<h3>Selecting computers and choosing targets</h3>
+<ul>
+<li>Click a tile to select it. Use <kbd>Ctrl</kbd>+click or <kbd>Shift</kbd>+click to select several.</li>
+<li>Toolbar and More-menu actions apply to every computer currently shown in the grid, after your location choice and filters.</li>
+<li>To act on particular computers only, select them and right-click. The right-click menu applies to the selected computers, or to every shown computer when none is selected.</li>
+<li>Remote Control and Remote View open one window for each selected computer. With no computer selected, you are asked for a computer name or IP address.</li>
+<li>Sharing a student's screen in Broadcast needs exactly one selected computer.</li>
+</ul>
+
+<h3>Classroom actions</h3>
+<ul>
+<li><strong>Monitor</strong>: the normal mode with live screen thumbnails.</li>
+<li><strong>Broadcast</strong>: shares your screen, or one selected student's screen, with the other computers, in full screen or in a window. Choose the mode from the Broadcast menu.</li>
+<li><strong>Lock</strong>: locks the screens and input of the computers.</li>
+<li><strong>Remote Control</strong>: controls one student computer with your mouse and keyboard.</li>
+<li><strong>Remote View</strong>: watches one student computer without controlling it.</li>
+<li><strong>Message</strong>: shows a text message on the student screens.</li>
+<li><strong>Send Files</strong>: copies files you choose to the student computers.</li>
+<li><strong>Collect Files</strong>: copies files from the student computers to your computer.</li>
+<li><strong>Screenshot</strong>: saves a screenshot of each computer.</li>
+<li><strong>Screenshots panel</strong>: shows and deletes saved screenshots.</li>
+<li><strong>Slideshow panel</strong>: shows the computer screens one after another.</li>
+<li><strong>Spotlight panel</strong>: shows chosen computers enlarged. Use Add and Remove to choose them.</li>
+<li><strong>Start Application</strong> and <strong>Open Website</strong>: start a program or open a website on the student computers. Predefined entries come from Classroom Administration.</li>
+<li><strong>Power On</strong>: wakes computers with Wake-on-LAN. This needs the computer's MAC address in its location and Wake-on-LAN support, which usually requires a wired connection.</li>
+<li><strong>Reboot</strong> and <strong>Power Down</strong>: restart or shut down the computers. Power Down offers options such as power down now, install updates and power down, power down after user confirmation, and power down after a timeout.</li>
+<li><strong>Log In</strong> and <strong>Log Off</strong>: sign a user in to, or out of, the student computers.</li>
+<li>The <strong>More</strong> menu holds the actions that are not on the toolbar.</li>
+</ul>
+</section>
+
+<section id="stopping" aria-labelledby="h-stopping">
+<h2 id="h-stopping">2. Stopping and reversing actions</h2>
+<ul>
+<li><strong>Broadcast</strong>: click "Stop Broadcast", or click Monitor.</li>
+<li><strong>Lock</strong>: click "Unlock", or click Monitor.</li>
+<li><strong>Remote Control</strong> and <strong>Remote View</strong>: close the window or click Exit in its toolbar. "View only" switches between watching and controlling.</li>
+<li><strong>Spotlight</strong>: remove the computers from the Spotlight panel, or close the panel.</li>
+<li><strong>Slideshow</strong>: pause it with its start/pause button, or close the panel.</li>
+<li>The Teacher Console cannot be closed while Broadcast or Lock is active. Stop the action first.</li>
+<li>If a computer stays locked or keeps showing a broadcast after the Teacher Console has closed, start the Teacher Console again, select that computer and stop the action from the right-click menu. Restarting that computer also ends it.</li>
+<li>Messages, sent or collected files, started programs, opened websites, Log Off, Reboot and Power Down cannot be undone from the Teacher Console. Check the shown computers before you start them.</li>
+<li>Reboot and Power Down ask for confirmation only when "Show confirmation dialog for potentially unsafe actions" is enabled on the Teacher Console page of Classroom Administration.</li>
+</ul>
+</section>
+
+<section id="student-agent" aria-labelledby="h-student-agent">
+<h2 id="h-student-agent">3. NextSpace Student Agent and network troubleshooting</h2>
+
+<h3>NextSpace Student Agent</h3>
+<ul>
+<li>The Student Agent is a Windows service on every student computer. It starts automatically with Windows by default. If the advanced Autostart setting on the Student Agent page of Classroom Administration is turned off, the service is switched to manual start instead.</li>
+<li>Its state (Running or Stopped) and the Start service and Stop service buttons are on the Student Agent page of Classroom Administration.</li>
+</ul>
+
+<h3>Wired, Wi-Fi and offline classroom networks</h3>
+<ul>
+<li>NextSpace works over the local classroom network, wired or Wi-Fi. It does not need the Internet.</li>
+<li>Wi-Fi is usually slower than a wired network. Expect slower thumbnails, Broadcast and file transfers on Wi-Fi.</li>
+<li>Wi-Fi networks that isolate devices from each other (for example guest networks) block the Teacher Console from reaching student computers.</li>
+</ul>
+
+<h3>If a computer cannot be reached</h3>
+<ol>
+<li>Check that the computer is powered on and connected to the classroom network.</li>
+<li>Check that its location entry in Classroom Administration has the right computer name or IP address.</li>
+<li>Check on that computer that the NextSpace Student Agent is Running.</li>
+<li>Check that the network port numbers on the Student Agent page are the same on the teacher and student computers.</li>
+<li>Check that the Windows firewall exception for the Student Agent is still in place. The installer adds it; do not turn the firewall off.</li>
+<li>If the tile reports that access is denied, check the authentication keys and access control settings (see section 4).</li>
+<li>If it still fails, contact managed support (see section 6).</li>
+</ol>
+
+<h3>Being listed or reachable is not authorization</h3>
+<p class="note">A computer that appears in the list or answers on the network is not thereby authorized for access. The Teacher Console may access a student computer only when the configured authentication and access control rules allow it.</p>
+</section>
+
+<section id="administration" aria-labelledby="h-administration">
+<h2 id="h-administration">4. NextSpace Classroom Administration basics</h2>
+<ul>
+<li>Open "NextSpace Classroom Administration" from the Start menu. Changing computer-wide settings needs Windows administrator rights.</li>
+<li>The pages on the left hold the settings, for example General, Student Agent, Teacher Console, Access control, Authentication keys, Locations &amp; computers, Applications &amp; websites and File transfer. View &gt; Advanced shows additional settings.</li>
+<li>Apply saves your changes. Reset discards changes that are not yet saved. If you close the window with unsaved changes, you are asked first.</li>
+<li>After saving, you may be asked to restart the NextSpace Student Agent. Some settings take effect only after that restart.</li>
+<li>File &gt; Save settings to file and File &gt; Load settings from file copy a configuration between computers. File &gt; Reset configuration clears the local configuration after a confirmation.</li>
+</ul>
+
+<h3>Authentication keys and passwords</h3>
+<ul>
+<li>With key file authentication, the private key stays on teacher computers only and the matching public key is installed on student computers. Anyone who holds the private key can access the student computers, so protect it.</li>
+<li>With logon authentication, the teacher signs in with an existing Windows user name and password.</li>
+<li>Access control rules decide which users may access student computers.</li>
+<li>Keep keys and passwords out of e-mail, screenshots and shared folders.</li>
+</ul>
+</section>
+
+<section id="security" aria-labelledby="h-security">
+<h2 id="h-security">5. Security boundaries</h2>
+<ul>
+<li>Students should use standard Windows accounts, not administrator accounts.</li>
+<li>NextSpace cannot protect a student computer against a person with local Windows administrator rights on that computer.</li>
+<li>Installation, keys and access settings should be set up and verified by the managed-service technician.</li>
+<li>Do not disable Windows security features, such as the firewall or antivirus protection, to make NextSpace work.</li>
+</ul>
+</section>
+
+<section id="support" aria-labelledby="h-support">
+<h2 id="h-support">6. Support, version and licence</h2>
+
+<h3>Support</h3>
+<ul>
+<li>NextSpace Classroom Management is supported as a managed service by EduLearn Technologies Inc.</li>
+<li>E-mail: support@edulearntechnologies.com</li>
+<li>Website: edulearntechnologies.com</li>
+<li>Please include the computer names, the time, what you did and what you saw. The version is shown in About.</li>
+</ul>
+
+<h3>Version</h3>
+<ul>
+<li>NextSpace Classroom Management 1.0.0 - based on Veyon 4.11.4</li>
+</ul>
+
+<h3>Licence and provenance</h3>
+<ul>
+<li>NextSpace Classroom Management is a modified version of Veyon 4.11.4. Veyon is Copyright (c) 2004-2026 Veyon Solutions / Tobias Junghans.</li>
+<li>It is distributed under the GNU General Public License, version 2 or (at your option) any later version, WITHOUT ANY WARRANTY.</li>
+<li>The licence text is in LICENSE.TXT in the installation folder and in About. Third-party notices are in THIRD-PARTY-NOTICES.txt.</li>
+</ul>
+</section>
+
+</main>
+</body>
+</html>

@@ -67,6 +67,7 @@ protected:
 
 private Q_SLOTS:
 	void showAboutDialog();
+	void showOfflineHelp();
 
 private:
 	static int buttonId(const Feature& feature) // clazy:exclude=qt6-qhash-signature

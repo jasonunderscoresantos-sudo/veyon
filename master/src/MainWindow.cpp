@@ -24,8 +24,11 @@
 
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QFrame>
+#include <QIcon>
 #include <QJsonDocument>
 #include <QKeyEvent>
 #include <QHostAddress>
@@ -36,6 +39,9 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QSplitter>
+#include <QSignalBlocker>
+#include <QToolButton>
+#include <QStackedLayout>
 #include <QVBoxLayout>
 
 #include "AboutDialog.h"
@@ -51,6 +57,7 @@
 #include "MonitoringMode.h"
 #include "NetworkObjectDirectory.h"
 #include "NetworkObjectDirectoryManager.h"
+#include "NextSpaceHelp.h"
 #include "PlatformUserFunctions.h"
 #include "SlideshowPanel.h"
 #include "SpotlightPanel.h"
@@ -78,6 +85,136 @@ const QStringList& moreMenuLayout()
 	return layout;
 }
 
+constexpr int IdentityHeaderHeight = 80;
+constexpr int IdentityIconSize = 44;
+constexpr int IdentityTitleSize = 18;
+constexpr int IdentitySubtitleSize = 12;
+constexpr int IdentityHorizontalMargin = 24;
+constexpr int IdentityVerticalMargin = 16;
+constexpr int IdentityGap = 12;
+constexpr int IdentityTextGap = 3;
+constexpr int IdentityButtonMinimumHeight = 36;
+
+struct ClassroomContextSnapshot
+{
+	QString location{};
+	int total{0};
+	int connected{0};
+};
+
+ClassroomContextSnapshot classroomContextSnapshot( const ComputerControlListModel& sourceModel )
+{
+	ClassroomContextSnapshot context;
+	context.total = sourceModel.rowCount();
+	bool singleLocation = context.total > 0;
+
+	for( int row = 0; row < context.total; ++row )
+	{
+		const auto index = sourceModel.index( row, 0 );
+		const auto controlInterface = sourceModel.data(
+			index, ComputerControlListModel::ControlInterfaceRole ).value<ComputerControlInterface::Pointer>();
+		const auto rowLocation = controlInterface.isNull()
+			? QString{}
+			: controlInterface->computer().location().trimmed();
+
+		if( rowLocation.isEmpty() )
+		{
+			singleLocation = false;
+		}
+		else if( context.location.isEmpty() )
+		{
+			context.location = rowLocation;
+		}
+		else if( context.location != rowLocation )
+		{
+			singleLocation = false;
+		}
+
+		if( sourceModel.data( index, ComputerControlListModel::StateRole )
+				.value<ComputerControlInterface::State>() == ComputerControlInterface::State::Connected )
+		{
+			++context.connected;
+		}
+	}
+
+	if( singleLocation == false )
+	{
+		context.location.clear();
+	}
+
+	return context;
+}
+
+QWidget* createTeacherIdentityHeader( QToolButton* helpButton, QToolButton* aboutButton, QWidget* parent )
+{
+	auto header = new QWidget( parent );
+	header->setObjectName( QStringLiteral("TeacherIdentityHeader") );
+	header->setBackgroundRole( QPalette::Window );
+	header->setAutoFillBackground( true );
+	header->setFixedHeight( IdentityHeaderHeight );
+
+	auto headerLayout = new QVBoxLayout( header );
+	headerLayout->setContentsMargins( 0, 0, 0, 0 );
+	headerLayout->setSpacing( 0 );
+
+	auto identityRow = new QWidget( header );
+	auto identityRowLayout = new QHBoxLayout( identityRow );
+	identityRowLayout->setContentsMargins( IdentityHorizontalMargin, IdentityVerticalMargin,
+										 IdentityHorizontalMargin, IdentityVerticalMargin );
+	identityRowLayout->setSpacing( IdentityGap );
+
+	auto iconLabel = new QLabel( identityRow );
+	iconLabel->setFixedSize( IdentityIconSize, IdentityIconSize );
+	iconLabel->setPixmap( QIcon( QStringLiteral(":/master/branding/nextspace-teacher-console-64.png") )
+						  .pixmap( QSize( IdentityIconSize, IdentityIconSize ), header->devicePixelRatioF() ) );
+	iconLabel->setAlignment( Qt::AlignCenter );
+
+	auto identityText = new QWidget( identityRow );
+	auto identityTextLayout = new QVBoxLayout( identityText );
+	identityTextLayout->setContentsMargins( 0, 0, 0, 0 );
+	identityTextLayout->setSpacing( IdentityTextGap );
+	identityTextLayout->addStretch( 1 );
+
+	auto titleLabel = new QLabel( QStringLiteral("NextSpace Teacher Console"), identityText );
+	auto titleFont = titleLabel->font();
+	titleFont.setPixelSize( IdentityTitleSize );
+	titleFont.setWeight( QFont::DemiBold );
+	titleLabel->setFont( titleFont );
+	identityTextLayout->addWidget( titleLabel );
+
+	auto subtitleLabel = new QLabel( QStringLiteral("Classroom Management"), identityText );
+	auto subtitleFont = subtitleLabel->font();
+	subtitleFont.setPixelSize( IdentitySubtitleSize );
+	subtitleFont.setWeight( QFont::Normal );
+	subtitleLabel->setFont( subtitleFont );
+	subtitleLabel->setForegroundRole( QPalette::PlaceholderText );
+	identityTextLayout->addWidget( subtitleLabel );
+	identityTextLayout->addStretch( 1 );
+
+	for( auto* button : { helpButton, aboutButton } )
+	{
+		button->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+		button->setMinimumHeight( IdentityButtonMinimumHeight );
+	}
+
+	identityRowLayout->addWidget( iconLabel );
+	identityRowLayout->addWidget( identityText );
+	identityRowLayout->addStretch( 1 );
+	identityRowLayout->addWidget( helpButton );
+	identityRowLayout->addWidget( aboutButton );
+	headerLayout->addWidget( identityRow, 1 );
+
+	auto separator = new QFrame( header );
+	separator->setObjectName( QStringLiteral("TeacherIdentityHeaderSeparator") );
+	separator->setFrameShape( QFrame::HLine );
+	separator->setFrameShadow( QFrame::Plain );
+	separator->setForegroundRole( QPalette::Mid );
+	separator->setFixedHeight( 1 );
+	headerLayout->addWidget( separator );
+
+	return header;
+}
+
 }
 
 
@@ -91,27 +228,82 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	restoreState( QByteArray::fromBase64( m_master.userConfig().windowState().toUtf8() ) );
 	restoreGeometry( QByteArray::fromBase64( m_master.userConfig().windowGeometry().toUtf8() ) );
+	auto identityHeader = createTeacherIdentityHeader( ui->helpButton, ui->aboutButton, ui->centralWidget );
 
 	// add panel toggles to status bar
 	ui->statusBar->addWidget( ui->panelButtons );
+	static constexpr int SecondaryNavigationHeight = 32;
+	static constexpr int SecondaryNavigationGap = 8;
+	ui->panelButtons->layout()->setSpacing( SecondaryNavigationGap );
+	for( auto* button : { ui->computerSelectPanelButton, ui->screenshotManagementPanelButton,
+						 ui->slideshowPanelButton, ui->spotlightPanelButton } )
+	{
+		button->setMinimumHeight( SecondaryNavigationHeight );
+		button->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	}
 	// NextSpace accessibility: the Screenshots view-strip toggle takes keyboard focus like the other three
 	ui->screenshotManagementPanelButton->setFocusPolicy( Qt::StrongFocus );
 
 	// NextSpace layout: search, filters and view controls sit directly above the computer grid
-	static constexpr int ControlHeight = 36;
+	static constexpr int FilterControlHeight = 36;
+	static constexpr int FilterSurfaceInset = 12;
+	static constexpr int FilterSurfaceGap = 8;
+	static constexpr int FilterSurfaceRadius = 10;
+	static constexpr int ControlMinimumWidth = 160;
+	static constexpr int MonitoringRowsGap = 14;
 	auto monitoringArea = new QWidget;
 	monitoringArea->setObjectName( QStringLiteral("MonitoringArea") );
 	auto monitoringAreaLayout = new QVBoxLayout( monitoringArea );
 	monitoringAreaLayout->setContentsMargins( 0, 0, 0, 0 );
 	monitoringAreaLayout->setSpacing( 0 );
+	auto monitoringFilterArea = new QWidget( monitoringArea );
+	monitoringFilterArea->setObjectName( QStringLiteral("MonitoringFilterArea") );
+	auto monitoringFilterLayout = new QHBoxLayout( monitoringFilterArea );
+	monitoringFilterLayout->setContentsMargins( FilterSurfaceInset, FilterSurfaceInset,
+										 FilterSurfaceInset, FilterSurfaceInset );
+	monitoringFilterLayout->setSpacing( FilterSurfaceGap );
+	ui->filterLineEdit->setPlaceholderText( tr("Find a computer or user…") );
+	ui->filterLineEdit->setMinimumWidth( ControlMinimumWidth );
+	ui->filterLineEdit->setMinimumHeight( FilterControlHeight );
+	auto searchSizePolicy = ui->filterLineEdit->sizePolicy();
+	searchSizePolicy.setHorizontalPolicy( QSizePolicy::Expanding );
+	ui->filterLineEdit->setSizePolicy( searchSizePolicy );
+	ui->filterPoweredOnComputersButton->setText( tr("Powered on only") );
+	ui->filterComputersWithLoggedOnUsersButton->setText( tr("Logged-in users only") );
+	ui->filterPoweredOnComputersButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	ui->filterComputersWithLoggedOnUsersButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	monitoringFilterLayout->addWidget( ui->filterLineEdit, 1 );
+	monitoringFilterLayout->addWidget( ui->filterPoweredOnComputersButton );
+	monitoringFilterLayout->addWidget( ui->filterComputersWithLoggedOnUsersButton );
+	monitoringArea->setStyleSheet( QStringLiteral(
+		"QWidget#MonitoringFilterArea { background-color: palette(base); border: 1px solid palette(mid); "
+		"border-radius: %1px; }"
+		"QWidget#MonitoringFilterArea QLineEdit { background-color: palette(base); color: palette(text); "
+		"border: 1px solid palette(mid); border-radius: 8px; padding: 0 12px; }"
+		"QWidget#MonitoringFilterArea QLineEdit:focus { border: 2px solid palette(link); }"
+		"QWidget#MonitoringFilterArea QToolButton { background-color: palette(button); color: palette(button-text); "
+		"border: 1px solid transparent; border-radius: 8px; padding: 0 12px; }"
+		"QWidget#MonitoringFilterArea QToolButton:hover { background-color: palette(alternate-base); "
+		"border-color: palette(mid); }"
+		"QWidget#MonitoringFilterArea QToolButton:checked { background-color: palette(highlight); "
+		"color: palette(highlighted-text); }"
+		"QWidget#MonitoringFilterArea QToolButton:focus { border: 2px solid palette(link); }"
+		"QWidget#MonitoringViewControlsArea QToolButton { background-color: palette(button); "
+		"color: palette(button-text); border: 1px solid transparent; border-radius: 8px; padding: 0 10px; }"
+		"QWidget#MonitoringViewControlsArea QToolButton:hover { background-color: palette(alternate-base); "
+		"border-color: palette(mid); }"
+		"QWidget#MonitoringViewControlsArea QToolButton:checked { background-color: palette(highlight); "
+		"color: palette(highlighted-text); }"
+		"QWidget#MonitoringViewControlsArea QToolButton:focus { border: 2px solid palette(link); }"
+		"QWidget#MonitoringViewControlsArea QToolButton:disabled { color: palette(mid); "
+		"background-color: palette(base); }" )
+		.arg( FilterSurfaceRadius ) );
 
-	auto monitoringControlsLayout = new QHBoxLayout;
-	monitoringControlsLayout->setContentsMargins( 12, 8, 12, 8 );
-	monitoringControlsLayout->setSpacing( 8 );
-	monitoringControlsLayout->addWidget( ui->filterLineEdit, 3 );
-	monitoringControlsLayout->addWidget( ui->filterPoweredOnComputersButton );
-	monitoringControlsLayout->addWidget( ui->filterComputersWithLoggedOnUsersButton );
-	monitoringControlsLayout->addSpacing( 16 );
+	auto monitoringViewControlsArea = new QWidget( monitoringArea );
+	monitoringViewControlsArea->setObjectName( QStringLiteral("MonitoringViewControlsArea") );
+	auto monitoringViewControlsLayout = new QHBoxLayout( monitoringViewControlsArea );
+	monitoringViewControlsLayout->setContentsMargins( 0, 0, 0, 0 );
+	monitoringViewControlsLayout->setSpacing( FilterSurfaceGap );
 
 	// selection summary: describes, but does not change, which computers actions apply to
 	auto selectionSummaryLabel = new QLabel;
@@ -121,44 +313,103 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 										  "if none is selected. Broadcasting a student's screen needs exactly one selected computer. "
 										  "Right-click menu actions apply to the selected computers, or to ALL computers shown "
 										  "when none is selected (including power actions).") );
-	monitoringControlsLayout->addWidget( selectionSummaryLabel );
-	monitoringControlsLayout->addSpacing( 16 );
-
 	const auto updateSelectionSummary = [this, selectionSummaryLabel]() {
-		selectionSummaryLabel->setText( tr("%1 shown · %2 selected")
-											.arg( ui->computerMonitoringWidget->model()->rowCount() )
+		selectionSummaryLabel->setText( tr("%1 selected")
 											.arg( ui->computerMonitoringWidget->selectionModel()->selectedIndexes().size() ) );
 	};
 	const auto monitoringModel = ui->computerMonitoringWidget->model();
+	const auto sourceModel = &m_master.computerControlListModel();
 	connect( ui->computerMonitoringWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, updateSelectionSummary );
-	connect( monitoringModel, &QAbstractItemModel::rowsInserted, this, updateSelectionSummary );
-	connect( monitoringModel, &QAbstractItemModel::rowsRemoved, this, updateSelectionSummary );
 	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateSelectionSummary );
-	connect( monitoringModel, &QAbstractItemModel::layoutChanged, this, updateSelectionSummary );
 	updateSelectionSummary();
-	monitoringControlsLayout->addWidget( ui->gridSizeSlider, 1 );
-	monitoringControlsLayout->addWidget( ui->autoAdjustComputerIconSizeButton );
-	monitoringControlsLayout->addWidget( ui->useCustomComputerPositionsButton );
-	monitoringControlsLayout->addWidget( ui->alignComputersButton );
+	auto selectVisibleCheckBox = new QCheckBox( tr("Select visible"), monitoringViewControlsArea );
+	selectVisibleCheckBox->setObjectName( QStringLiteral("SelectVisibleCheckBox") );
+	selectVisibleCheckBox->setTristate( true );
+	selectVisibleCheckBox->setMinimumHeight( FilterControlHeight );
+	selectVisibleCheckBox->setToolTip( tr("Select or clear all computers currently shown.") );
+	selectVisibleCheckBox->setAccessibleName( tr("Select visible computers") );
+	const auto updateSelectVisible = [selectVisibleCheckBox, monitoringModel,
+									 uiSelectionModel = ui->computerMonitoringWidget->selectionModel()]() {
+		const auto visibleCount = monitoringModel->rowCount();
+		int selectedVisibleCount = 0;
+		for( int row = 0; row < visibleCount; ++row )
+		{
+			selectedVisibleCount += uiSelectionModel->isSelected( monitoringModel->index( row, 0 ) ) ? 1 : 0;
+		}
 
-	ui->filterLineEdit->setMinimumHeight( ControlHeight );
+		const QSignalBlocker blocker( selectVisibleCheckBox );
+		selectVisibleCheckBox->setEnabled( visibleCount > 0 );
+		selectVisibleCheckBox->setCheckState(
+			visibleCount == 0 || selectedVisibleCount == 0 ? Qt::Unchecked :
+			selectedVisibleCount == visibleCount ? Qt::Checked : Qt::PartiallyChecked );
+	};
+	connect( selectVisibleCheckBox, &QCheckBox::clicked, this,
+		[monitoringModel, uiSelectionModel = ui->computerMonitoringWidget->selectionModel()]( bool checked ) {
+			const auto visibleCount = monitoringModel->rowCount();
+			if( visibleCount > 0 )
+			{
+				const QItemSelection visibleRows( monitoringModel->index( 0, 0 ),
+										  monitoringModel->index( visibleCount - 1, 0 ) );
+				uiSelectionModel->select( visibleRows, checked ? QItemSelectionModel::Select : QItemSelectionModel::Deselect );
+			}
+		} );
+	connect( ui->computerMonitoringWidget->selectionModel(), &QItemSelectionModel::selectionChanged,
+			 this, updateSelectVisible );
+	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
+	{
+		connect( monitoringModel, signal, this, updateSelectVisible );
+	}
+	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateSelectVisible );
+	connect( monitoringModel, &QAbstractItemModel::layoutChanged, this, updateSelectVisible );
+	updateSelectVisible();
+	monitoringViewControlsLayout->addWidget( selectVisibleCheckBox );
+	monitoringViewControlsLayout->addStretch( 1 );
+	auto thumbnailSizeLabel = new QLabel( tr("Thumbnail size"), monitoringViewControlsArea );
+	thumbnailSizeLabel->setObjectName( QStringLiteral("ThumbnailSizeLabel") );
+	thumbnailSizeLabel->setBuddy( ui->gridSizeSlider );
+	ui->gridSizeSlider->setMinimumWidth( ControlMinimumWidth );
+	ui->autoAdjustComputerIconSizeButton->setText( tr("Auto") );
+	ui->useCustomComputerPositionsButton->setText( tr("Custom positions") );
+	ui->alignComputersButton->setText( tr("Align") );
+	ui->autoAdjustComputerIconSizeButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	ui->useCustomComputerPositionsButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	ui->alignComputersButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+	monitoringViewControlsLayout->addWidget( thumbnailSizeLabel );
+	monitoringViewControlsLayout->addWidget( ui->gridSizeSlider );
+	monitoringViewControlsLayout->addWidget( ui->autoAdjustComputerIconSizeButton );
+	monitoringViewControlsLayout->addWidget( ui->useCustomComputerPositionsButton );
+	monitoringViewControlsLayout->addWidget( ui->alignComputersButton );
+
 	for( auto* button : { ui->filterPoweredOnComputersButton, ui->filterComputersWithLoggedOnUsersButton,
 						  ui->autoAdjustComputerIconSizeButton, ui->useCustomComputerPositionsButton,
 						  ui->alignComputersButton } )
 	{
-		button->setMinimumSize( ControlHeight, ControlHeight );
+		button->setMinimumSize( FilterControlHeight, FilterControlHeight );
 	}
 
 	ui->centralLayout->removeWidget( ui->computerMonitoringWidget );
-	monitoringAreaLayout->addLayout( monitoringControlsLayout );
-	monitoringAreaLayout->addWidget( ui->computerMonitoringWidget, 1 );
+	ui->centralLayout->setDirection( QBoxLayout::TopToBottom );
+	ui->centralLayout->addWidget( identityHeader );
+	monitoringAreaLayout->addWidget( monitoringFilterArea );
+	monitoringAreaLayout->addSpacing( MonitoringRowsGap );
+	monitoringAreaLayout->addWidget( monitoringViewControlsArea );
+	auto monitoringGridArea = new QWidget( monitoringArea );
+	monitoringGridArea->setObjectName( QStringLiteral("MonitoringGridArea") );
+	auto monitoringGridAreaLayout = new QStackedLayout( monitoringGridArea );
+	monitoringGridAreaLayout->setContentsMargins( 0, 0, 0, 0 );
+	monitoringGridAreaLayout->setSpacing( 0 );
+	monitoringGridAreaLayout->setStackingMode( QStackedLayout::StackAll );
+	monitoringGridAreaLayout->addWidget( ui->computerMonitoringWidget );
+	monitoringAreaLayout->addWidget( monitoringGridArea, 1 );
 
 	// NextSpace empty state: a non-interactive overlay inside the unchanged monitoring view, shown only while the
 	// view's filtered model has no rows; the view keeps its focus, selection, drop and context-menu behavior
-	auto emptyState = new QWidget( ui->computerMonitoringWidget->viewport() );
+	auto emptyState = new QWidget( monitoringGridArea );
 	emptyState->setObjectName( QStringLiteral("MonitoringEmptyState") );
+	emptyState->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
 	emptyState->setAttribute( Qt::WA_TransparentForMouseEvents );
 	emptyState->setFocusPolicy( Qt::NoFocus );
+	emptyState->setPalette( ui->computerMonitoringWidget->palette() );
 	auto emptyStateLayout = new QVBoxLayout( emptyState );
 	emptyStateLayout->setContentsMargins( 24, 24, 24, 24 );
 	emptyStateLayout->setSpacing( 8 );
@@ -183,16 +434,31 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	emptyStateHelper->setFont( emptyStateHelperFont );
 	emptyStateLayout->addStretch( 1 );
 
-	auto viewportLayout = new QVBoxLayout( ui->computerMonitoringWidget->viewport() );
-	viewportLayout->setSizeConstraint( QLayout::SetNoConstraint );
-	viewportLayout->setContentsMargins( 0, 0, 0, 0 );
-	viewportLayout->addWidget( emptyState );
+	monitoringGridAreaLayout->addWidget( emptyState );
 
-	const auto updateEmptyState = [this, emptyState]() {
-		emptyState->setVisible( ui->computerMonitoringWidget->model()->rowCount() == 0 );
+	const auto updateEmptyState = [emptyState, emptyStateHeading, emptyStateHelper,
+								   monitoringModel, sourceModel, this]() {
+		const auto filteredEmpty = monitoringModel->rowCount() == 0;
+		if( sourceModel->rowCount() == 0 )
+		{
+			emptyStateHeading->setText( tr("No computers to display") );
+			emptyStateHelper->setText( tr("Review your existing locations and filters.") );
+		}
+		else
+		{
+			emptyStateHeading->setText( tr("No matching computers") );
+			emptyStateHelper->setText( tr("Clear the search or active filters.") );
+		}
+		emptyState->setVisible( filteredEmpty );
+		filteredEmpty ? emptyState->raise() : ui->computerMonitoringWidget->raise();
 	};
-	connect( monitoringModel, &QAbstractItemModel::rowsInserted, this, updateEmptyState );
-	connect( monitoringModel, &QAbstractItemModel::rowsRemoved, this, updateEmptyState );
+	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
+	{
+		connect( sourceModel, signal, this, updateEmptyState );
+		connect( monitoringModel, signal, this, updateEmptyState );
+	}
+	connect( sourceModel, &QAbstractItemModel::modelReset, this, updateEmptyState );
+	connect( sourceModel, &QAbstractItemModel::layoutChanged, this, updateEmptyState );
 	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateEmptyState );
 	connect( monitoringModel, &QAbstractItemModel::layoutChanged, this, updateEmptyState );
 	updateEmptyState();
@@ -214,6 +480,88 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	auto screenshotManagementPanel = new ScreenshotManagementPanel();
 	auto slideshowPanel = new SlideshowPanel( m_master.userConfig(), ui->computerMonitoringWidget );
 	auto spotlightPanel = new SpotlightPanel( m_master.userConfig(), ui->computerMonitoringWidget );
+	auto teacherWorkspace = new QWidget( mainSplitter );
+	teacherWorkspace->setObjectName( QStringLiteral("TeacherWorkspace") );
+	auto teacherWorkspaceLayout = new QVBoxLayout( teacherWorkspace );
+	static constexpr int ClassroomOuterMargin = 24;
+	static constexpr int ClassroomHeadingSize = 24;
+	static constexpr int ClassroomSummarySize = 12;
+	static constexpr int ClassroomHeadingGap = 8;
+	static constexpr int ClassroomActionsTopGap = 20;
+	static constexpr int ClassroomActionsBottomGap = 16;
+	teacherWorkspaceLayout->setContentsMargins( ClassroomOuterMargin, ClassroomOuterMargin,
+											ClassroomOuterMargin, ClassroomOuterMargin );
+	teacherWorkspaceLayout->setSpacing( 0 );
+	auto classroomContextArea = new QWidget( teacherWorkspace );
+	classroomContextArea->setObjectName( QStringLiteral("ClassroomContextArea") );
+	classroomContextArea->setMaximumHeight( QWIDGETSIZE_MAX );
+	classroomContextArea->show();
+	auto classroomContextLayout = new QHBoxLayout( classroomContextArea );
+	classroomContextLayout->setContentsMargins( 0, 0, 0, 0 );
+	classroomContextLayout->setSpacing( 16 );
+	auto classroomText = new QWidget( classroomContextArea );
+	auto classroomTextLayout = new QVBoxLayout( classroomText );
+	classroomTextLayout->setContentsMargins( 0, 0, 0, 0 );
+	classroomTextLayout->setSpacing( ClassroomHeadingGap );
+	auto classroomTitleLabel = new QLabel( classroomText );
+	classroomTitleLabel->setObjectName( QStringLiteral("ClassroomContextTitleLabel") );
+	classroomTitleLabel->setTextFormat( Qt::PlainText );
+	classroomTitleLabel->setAccessibleDescription( tr("Classroom context") );
+	auto classroomHeadingFont = classroomTitleLabel->font();
+	classroomHeadingFont.setPixelSize( ClassroomHeadingSize );
+	classroomHeadingFont.setWeight( QFont::DemiBold );
+	classroomTitleLabel->setFont( classroomHeadingFont );
+	auto classroomSummaryLabel = new QLabel( classroomText );
+	classroomSummaryLabel->setObjectName( QStringLiteral("ClassroomContextSummaryLabel") );
+	classroomSummaryLabel->setTextFormat( Qt::PlainText );
+	classroomSummaryLabel->setAccessibleDescription( tr("Classroom counts") );
+	classroomSummaryLabel->setForegroundRole( QPalette::PlaceholderText );
+	auto classroomSummaryFont = classroomSummaryLabel->font();
+	classroomSummaryFont.setPixelSize( ClassroomSummarySize );
+	classroomSummaryLabel->setFont( classroomSummaryFont );
+	classroomTextLayout->addWidget( classroomTitleLabel );
+	classroomTextLayout->addWidget( classroomSummaryLabel );
+	classroomContextLayout->addWidget( classroomText );
+	classroomContextLayout->addStretch( 1 );
+	auto selectionSummaryFont = selectionSummaryLabel->font();
+	selectionSummaryFont.setPixelSize( ClassroomSummarySize );
+	selectionSummaryLabel->setFont( selectionSummaryFont );
+	selectionSummaryLabel->setForegroundRole( QPalette::PlaceholderText );
+	selectionSummaryLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+	classroomContextLayout->addWidget( selectionSummaryLabel, 0, Qt::AlignRight | Qt::AlignVCenter );
+	auto classroomActionArea = new QWidget( teacherWorkspace );
+	classroomActionArea->setObjectName( QStringLiteral("ClassroomActionArea") );
+	auto actionAreaLayout = new QVBoxLayout( classroomActionArea );
+	actionAreaLayout->setContentsMargins( 0, 0, 0, 0 );
+	actionAreaLayout->setSpacing( 0 );
+	teacherWorkspaceLayout->addWidget( classroomContextArea );
+	teacherWorkspaceLayout->addSpacing( ClassroomActionsTopGap );
+	teacherWorkspaceLayout->addWidget( classroomActionArea );
+	teacherWorkspaceLayout->addSpacing( ClassroomActionsBottomGap );
+	teacherWorkspaceLayout->addWidget( monitoringSplitter, 1 );
+
+	const auto updateClassroomContext = [this, sourceModel, monitoringModel,
+										 classroomTitleLabel, classroomSummaryLabel]() {
+		const auto context = classroomContextSnapshot( *sourceModel );
+		classroomTitleLabel->setText( context.location.isEmpty()
+			? tr("Classroom overview")
+			: context.location );
+		classroomSummaryLabel->setText( tr("%1 visible · %2 computers · %3 connected")
+			.arg( monitoringModel->rowCount() )
+			.arg( context.total )
+			.arg( context.connected ) );
+	};
+	for( const auto signal : { &QAbstractItemModel::rowsInserted, &QAbstractItemModel::rowsRemoved } )
+	{
+		connect( sourceModel, signal, this, updateClassroomContext );
+		connect( monitoringModel, signal, this, updateClassroomContext );
+	}
+	connect( sourceModel, &QAbstractItemModel::modelReset, this, updateClassroomContext );
+	connect( sourceModel, &QAbstractItemModel::layoutChanged, this, updateClassroomContext );
+	connect( sourceModel, &ComputerControlListModel::stateChanged, this, updateClassroomContext );
+	connect( monitoringModel, &QAbstractItemModel::modelReset, this, updateClassroomContext );
+	connect( monitoringModel, &QAbstractItemModel::layoutChanged, this, updateClassroomContext );
+	updateClassroomContext();
 
 	slideshowSpotlightSplitter->addWidget( slideshowPanel );
 	slideshowSpotlightSplitter->addWidget( spotlightPanel );
@@ -227,9 +575,9 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	mainSplitter->addWidget( computerSelectPanel );
 	mainSplitter->addWidget( screenshotManagementPanel );
-	mainSplitter->addWidget( monitoringSplitter );
+	mainSplitter->addWidget( teacherWorkspace );
 
-	mainSplitter->setStretchFactor( mainSplitter->indexOf(monitoringSplitter), 1 );
+	mainSplitter->setStretchFactor( mainSplitter->indexOf(teacherWorkspace), 1 );
 
 
 	static const QHash<QWidget *, QAbstractButton *> panelButtons{
@@ -288,7 +636,10 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 			splitterSizes.append( size );
 			++index;
 		}
-		splitter->setSizes( splitterSizes );
+		if( splitterSizes.isEmpty() == false )
+		{
+			splitter->setSizes( splitterSizes );
+		}
 	}
 
 	const auto SplitterContentBaseSize = 500;
@@ -314,11 +665,29 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 
 	// initialize filter controls
 	connect( ui->filterLineEdit, &QLineEdit::textChanged,
-			 this, [this]( const QString& filter ) { ui->computerMonitoringWidget->setSearchFilter( filter ); } );
+			 this, [this, updateSelectionSummary, updateSelectVisible, updateEmptyState, updateClassroomContext]( const QString& filter ) {
+		ui->computerMonitoringWidget->setSearchFilter( filter );
+		updateSelectionSummary();
+		updateSelectVisible();
+		updateEmptyState();
+		updateClassroomContext();
+	} );
 	connect( ui->filterPoweredOnComputersButton, &QToolButton::toggled,
-			 this, [this]( bool enabled ) { ui->computerMonitoringWidget->setFilterPoweredOnComputers( enabled ); } );
+			 this, [this, updateSelectionSummary, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
+		ui->computerMonitoringWidget->setFilterPoweredOnComputers( enabled );
+		updateSelectionSummary();
+		updateSelectVisible();
+		updateEmptyState();
+		updateClassroomContext();
+	} );
 	connect( ui->filterComputersWithLoggedOnUsersButton, &QToolButton::toggled,
-			 this, [this]( bool enabled ) { ui->computerMonitoringWidget->setFilterComputersWithLoggedOnUsers( enabled ); } );
+			 this, [this, updateSelectionSummary, updateSelectVisible, updateEmptyState, updateClassroomContext]( bool enabled ) {
+		ui->computerMonitoringWidget->setFilterComputersWithLoggedOnUsers( enabled );
+		updateSelectionSummary();
+		updateSelectVisible();
+		updateEmptyState();
+		updateClassroomContext();
+	} );
 	ui->filterPoweredOnComputersButton->setChecked(m_master.userConfig().filterPoweredOnComputers());
 	ui->filterComputersWithLoggedOnUsersButton->setChecked(m_master.userConfig().filterComputersWithLoggedOnUsers());
 	// NextSpace accessibility: concise, translated names for the search field and the icon-only controls
@@ -393,14 +762,40 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 	setViewControlIcon( ui->useCustomComputerPositionsButton, TeacherActionIcons::ViewControl::CustomComputerPositions );
 	setViewControlIcon( ui->alignComputersButton, TeacherActionIcons::ViewControl::AlignComputers );
 	setViewControlIcon( ui->aboutButton, TeacherActionIcons::ViewControl::About );
+	setViewControlIcon( ui->helpButton, TeacherActionIcons::ViewControl::Help );
+
+	// NextSpace offline help (GC3-S2): F1, visible text, tooltip and accessible name come from MainWindow.ui
+	connect( ui->helpButton, &QToolButton::clicked, this, &MainWindow::showOfflineHelp );
 
 	// create the main toolbar
 	ui->toolBar->layout()->setSpacing( 8 );
 	ui->toolBar->toggleViewAction()->setEnabled( false );
-
-	addToolBar( Qt::TopToolBarArea, ui->toolBar );
+	removeToolBar( ui->toolBar );
+	ui->toolBar->setEmbeddedWorkspaceMode();
+	ui->toolBar->setMovable( false );
+	ui->toolBar->setFloatable( false );
+	actionAreaLayout->addWidget( ui->toolBar );
+	ui->toolBar->show();
 
 	addFeaturesToToolBar();
+	static constexpr int ActionButtonHeight = 36;
+	static constexpr int ActionIconSize = 20;
+	static constexpr int ActionButtonRadius = 8;
+	ui->toolBar->setIconSize( QSize( ActionIconSize, ActionIconSize ) );
+	ui->toolBar->setStyleSheet( QStringLiteral(
+		"QToolBar { background-color: palette(base); border: 0; }"
+		"QToolButton { background-color: palette(button); color: palette(button-text); "
+		"border: 1px solid transparent; border-radius: %1px; padding: 6px 10px; }"
+		"QToolButton:hover { background-color: palette(alternate-base); border-color: palette(mid); }"
+		"QToolButton:checked { background-color: palette(highlight); color: palette(highlighted-text); }"
+		"QToolButton:focus { border: 2px solid palette(highlight); }" ).arg( ActionButtonRadius ) );
+	const auto actionButtonStyle = ToolButton::iconOnlyMode() ? Qt::ToolButtonIconOnly : Qt::ToolButtonTextBesideIcon;
+	for( auto* button : ui->toolBar->findChildren<ToolButton *>() )
+	{
+		button->setToolButtonStyle( actionButtonStyle );
+		button->setMinimumHeight( ActionButtonHeight );
+		button->setIconSize( QSize( ActionIconSize, ActionIconSize ) );
+	}
 	reloadSubFeatures();
 	// NextSpace accessibility: when a mode button receives focus, Qt removes Tab focus from the other buttons
 	// of the exclusive mode group; give it back right away so every enabled mode button stays in the Tab cycle.
@@ -417,13 +812,6 @@ MainWindow::MainWindow( VeyonMaster &masterCore, QWidget* parent ) :
 			}
 		}
 	} );
-
-	// NextSpace layout: About sits at the far end of the toolbar
-	auto toolBarSpacer = new QWidget( ui->toolBar );
-	toolBarSpacer->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
-	ui->toolBar->addWidget( toolBarSpacer );
-	ui->aboutButton->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
-	ui->toolBar->addWidget( ui->aboutButton );
 
 	const auto monitoringModeButton = m_modeGroup->button(int(qHash(VeyonCore::builtinFeatures().monitoringMode().feature().uid()))); // clazy:exclude=qt6-qhash-signature
 	if (monitoringModeButton)
@@ -610,6 +998,13 @@ void MainWindow::keyPressEvent( QKeyEvent* event )
 void MainWindow::showAboutDialog()
 {
 	AboutDialog( this ).exec();
+}
+
+
+
+void MainWindow::showOfflineHelp()
+{
+	NextSpaceHelp::open( this );
 }
 
 
